@@ -136,9 +136,9 @@ const ReelBody: React.FC<{ reel: Reel }> = ({ reel }) => {
               <Seam frames={block.frames} enter={enter} exit={exit}>
               {block.scene ? (
                 <block.scene />
-              ) : block.animator ? (
+              ) : block.animator || block.blender ? (
                 <OffthreadVideo
-                  src={staticFile(block.animator)}
+                  src={staticFile(block.animator || block.blender!)}
                   muted
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />

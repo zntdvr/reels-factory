@@ -23,6 +23,7 @@
     "sfx": "node scripts/sfx.mjs",
     "shots": "node scripts/shots.mjs",
     "animator": "node scripts/animator.mjs",
+    "blender": "node scripts/blender.mjs",
     "probe": "node scripts/probe.mjs",
     "kb": "node scripts/kb.mjs"
   },

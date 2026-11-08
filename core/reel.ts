@@ -15,10 +15,10 @@ import type { SfxCue, SfxRole } from './sfx';
  */
 
 /**
- * ЧТО НА ЭКРАНЕ В ЭТОМ БЛОКЕ. Ровно две возможности, третьей нет:
+ * ЧТО НА ЭКРАНЕ В ЭТОМ БЛОКЕ. Выбирается ровно один источник:
  *
- *   сцена или Animator — графика на фоне стиля. Человека не видно, от него
- *            остаётся только голос;
+ *   сцена, Animator или Blender — графика на фоне стиля. Человека не видно,
+ *            от него остаётся только голос;
  *   камера — кадры присланного видео. Человек говорит, графика не рисуется.
  *
  * Смешивать их в одном блоке нельзя намеренно. Полупрозрачная графика поверх
@@ -36,6 +36,8 @@ export interface ReelBlock {
   scene?: React.FC;
   /** Клип с альфа-каналом, подготовленный Animator для whiteboard-сцен. */
   animator?: string;
+  /** Прозрачный 3D-клип, отрендеренный Blender для блока. */
+  blender?: string;
   /**
    * Блок отдан говорящему человеку: показываются кадры присланного видео.
    * Графическая сцена для такого блока не создаётся — и это главная экономия
@@ -157,21 +159,24 @@ export function defineReel(input: Omit<Reel, 'totalFrames'> & { audioSeconds?: n
   // блок без сцены и без пометки «камера» отрендерится пустым фоном, и увидят
   // это только на готовом файле.
   for (const b of written) {
-    const visualModes = Number(!!b.camera) + Number(!!b.scene) + Number(!!b.animator);
+    const visualModes = Number(!!b.camera) + Number(!!b.scene) + Number(!!b.animator) + Number(!!b.blender);
     if (visualModes > 1) {
       throw new Error(
         `Ролик «${id}», блок «${b.id}»: выбрано больше одного источника изображения. ` +
-          `Укажите что-то одно: camera, scene или animator.`,
+          `Укажите что-то одно: camera, scene, animator или blender.`,
       );
     }
     if (visualModes === 0) {
       throw new Error(
         `Ролик «${id}», блок «${b.id}»: не сказано, что на экране. ` +
-          `Выберите scene, animator или camera: true.`,
+          `Выберите scene, animator, blender или camera: true.`,
       );
     }
     if (b.animator && typeof b.animator !== 'string') {
       throw new Error(`Ролик «${id}», блок «${b.id}»: animator должен быть путём к видеофайлу.`);
+    }
+    if (b.blender && typeof b.blender !== 'string') {
+      throw new Error(`Ролик «${id}», блок «${b.id}»: blender должен быть путём к видеофайлу.`);
     }
     if (b.inset && !b.camera) {
       throw new Error(
