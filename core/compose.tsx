@@ -137,9 +137,9 @@ export const ReelBody: React.FC<{ reel: Reel; clean?: boolean }> = ({ reel, clea
               <Seam frames={block.frames} enter={enter} exit={exit}>
               {block.scene ? (
                 <block.scene />
-              ) : (block.effectcraft || block.animator) ? (
+              ) : (block.effectcraft || block.animator || block.blender) ? (
                 <OffthreadVideo
-                  src={staticFile((block.effectcraft || block.animator)!)}
+                  src={staticFile((block.effectcraft || block.animator || block.blender)!)}
                   transparent
                   muted
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}

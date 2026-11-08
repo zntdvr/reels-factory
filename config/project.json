@@ -101,6 +101,14 @@
   "effectcraft": { "cli": "" },
   "filmcraft": { "cli": "", "exportOnRender": true },
 
+  "blender": {
+    "enabled": true,
+    "executable": "tools/blender/blender",
+    "engine": "CYCLES",
+    "samples": 16,
+    "threads": 4
+  },
+
   "render": {
     "crf": 18,
     "concurrency": 2,

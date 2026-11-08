@@ -17,7 +17,7 @@ export const CraftExport: React.FC<{ reel: Reel }> = ({ reel }) => {
   let at = 0;
   const blocks = reel.blocks.map((block) => {
     const start = at; at += block.frames;
-    return { id: block.id, start, frames: block.frames, bakedScene: !!block.scene,
+    return { id: block.id, start, frames: block.frames, bakedScene: !!(block.scene || block.animator || block.blender),
       effectcraft: block.effectcraft, inset: !!block.inset,
       layers: (block.layers ?? []).map(({ ...layer }) => {
         if (layer.kind === 'render') { const { component, ...data } = layer; return data; }
