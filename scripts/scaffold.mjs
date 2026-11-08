@@ -51,10 +51,13 @@ const accentOf = (text) => {
 const graphic = blocks.filter((b) => !b.camera);
 const animatorOnCamera = blocks.find((b) => b.camera && b.visualizer === 'animator');
 if (animatorOnCamera) stop(`Блок ${animatorOnCamera.id} отмечен и как камера, и как Animator. Сначала решите, кто в кадре.`);
+const toolOnCamera = blocks.find((b) => b.camera && ['animator', 'blender'].includes(b.visualizer));
+if (toolOnCamera) stop(`Блок ${toolOnCamera.id} отмечен и как камера, и как ${toolOnCamera.visualizer}. Сначала решите, кто в кадре.`);
 const animatorBlocks = graphic.filter((b) => b.visualizer === 'animator');
-const remotionBlocks = graphic.filter((b) => b.visualizer !== 'animator');
-const unknownVisualizer = graphic.find((b) => b.visualizer && !['remotion', 'animator'].includes(b.visualizer));
-if (unknownVisualizer) stop(`Неизвестный visualizer «${unknownVisualizer.visualizer}» у блока ${unknownVisualizer.id}. Используйте remotion или animator.`);
+const blenderBlocks = graphic.filter((b) => b.visualizer === 'blender');
+const remotionBlocks = graphic.filter((b) => !['animator', 'blender'].includes(b.visualizer));
+const unknownVisualizer = graphic.find((b) => b.visualizer && !['remotion', 'animator', 'blender'].includes(b.visualizer));
+if (unknownVisualizer) stop(`Неизвестный visualizer «${unknownVisualizer.visualizer}» у блока ${unknownVisualizer.id}. Используйте remotion, animator или blender.`);
 const onCamera = blocks.length - graphic.length;
 
 let created = 0;
@@ -124,10 +127,75 @@ if (animatorBlocks.length) {
     }, null, 2) + '\n', 'utf8');
   }
 }
+if (blenderBlocks.length) {
+  const blenderDir = path.join(dir, 'blender');
+  mkdirSync(blenderDir, { recursive: true });
+  for (const block of blenderBlocks) {
+    const sceneFile = path.join(blenderDir, `${block.id}.py`);
+    if (existsSync(sceneFile)) continue;
+    writeFileSync(sceneFile, `"""Blender-сцена для блока ${block.id}: ${block.text.replace(/\"/g, '\\\"')}.
+
+Измени геометрию, материалы и анимацию под смысл реплики.
+Функция получает bpy, активную сцену и параметры видео.
+Фон рендерится прозрачным; голос и субтитры добавляет Reels Factory.
+"""
+import bpy
+import math
+
+
+def build_scene(bpy, scene, params):
+    """Создай объекты, камеру, свет и ключевые кадры для этой сцены."""
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete(use_global=False)
+
+    # Заглушка: вращающийся объёмный куб. Замени его метафорой блока.
+    bpy.ops.mesh.primitive_cube_add(size=1.5, location=(0, 0, 0))
+    subject = bpy.context.object
+    subject.name = "Subject"
+    bevel = subject.modifiers.new("SoftEdges", 'BEVEL')
+    bevel.width = 0.12
+    bevel.segments = 4
+    subject.modifiers.new("Normals", 'WEIGHTED_NORMAL')
+    subject.rotation_euler[2] = 0
+    subject.keyframe_insert(data_path="rotation_euler", frame=1)
+    subject.rotation_euler[2] = math.tau
+    subject.keyframe_insert(data_path="rotation_euler", frame=params["frames"])
+
+    material = bpy.data.materials.new("Accent")
+    material.diffuse_color = (0.14, 0.36, 0.95, 1.0)
+    material.use_nodes = True
+    material.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.14, 0.36, 0.95, 1.0)
+    material.node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 0.15
+    material.node_tree.nodes["Principled BSDF"].inputs["Roughness"].default_value = 0.3
+    subject.data.materials.append(material)
+
+    bpy.ops.object.camera_add(location=(3.8, -5.5, 3.3))
+    camera = bpy.context.object
+    direction = -camera.location
+    camera.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
+    camera.data.type = 'ORTHO'
+    camera.data.ortho_scale = 4.4
+    scene.camera = camera
+
+    bpy.ops.object.light_add(type='AREA', location=(0, -3, 4))
+    key = bpy.context.object
+    key.data.energy = 480
+    key.data.shape = 'DISK'
+    key.data.size = 5
+    key.rotation_euler = (math.radians(25), 0, math.radians(-12))
+
+    bpy.ops.object.light_add(type='AREA', location=(2, 2, 1.5))
+    fill = bpy.context.object
+    fill.data.energy = 220
+    fill.data.color = (0.35, 0.55, 1.0)
+    fill.data.size = 4
+`, 'utf8');
+  }
+}
 done(
   onCamera
-    ? `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, на камере ${onCamera}`
-    : `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}`,
+    ? `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, Blender-сцен: ${blenderBlocks.length}, на камере ${onCamera}`
+    : `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, Blender-сцен: ${blenderBlocks.length}`,
 );
 
 // ── слова для субтитров ─────────────────────────────────
@@ -166,7 +234,9 @@ const items = blocks
       frames: ${b.frames},
       ${b.camera ? 'camera: true,' : b.visualizer === 'animator'
         ? `animator: '${meta.id}/animator/${b.id}.webm',`
-        : `scene: ${b.id.toUpperCase()},`}
+        : b.visualizer === 'blender'
+          ? `blender: '${meta.id}/blender/${b.id}.webm',`
+          : `scene: ${b.id.toUpperCase()},`}
     },`,
   )
   .join('\n');
@@ -188,7 +258,7 @@ ${hasWords ? "import captions from './captions.json';\n" : ''}${imports}
  * картинка разъезжается с голосом.${onCamera ? `
  *
  * У каждого блока выбран способ визуализации в work/blocks.json: camera,
- * Remotion-сцена или Animator-клип. Чтобы изменить выбор, правьте visualizer
+ * Remotion-сцена, Animator-клип или Blender-клип. Чтобы изменить выбор, правьте visualizer
  * там и пересоберите каркас.` : ''}
  */
 export default defineReel({

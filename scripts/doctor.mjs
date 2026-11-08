@@ -122,6 +122,30 @@ if (!config) {
 if (existsSync(path.join(root, 'style', 'index.ts'))) ok('Стиль', 'стиль-пак на месте');
 else fail('Стиль', 'папка style пуста', 'Подключите свой дизайн-код командой /style');
 
+// ── Blender 3D ─────────────────────────────────────────
+if (config?.blender?.enabled === false) {
+  warn('Blender', 'выключен в настройке', 'Включите blender.enabled в config/project.json, если нужны объёмные 3D-сцены.');
+} else {
+  const configured = path.resolve(root, config?.blender?.executable || 'tools/blender/blender');
+  const executable = existsSync(configured) && !configured.toLowerCase().endsWith('.exe')
+    ? (configured.endsWith(isWindows ? 'blender.exe' : 'blender') ? configured : path.join(configured, isWindows ? 'blender.exe' : 'blender'))
+    : configured;
+  if (existsSync(executable)) {
+    const version = spawnSync(executable, ['--version'], { encoding: 'utf8', timeout: 15000 });
+    const engine = config?.blender?.engine || 'CYCLES';
+    const threads = Number(config?.blender?.threads || 2);
+    const renderProbe = `import bpy; s=bpy.context.scene; s.render.engine=${JSON.stringify(engine)}; ${engine === 'CYCLES' ? 's.cycles.device="CPU"; s.cycles.samples=1;' : ''} s.render.resolution_x=8; s.render.resolution_y=8; bpy.ops.render.render()`;
+    const runtime = version.status === 0
+      ? spawnSync(executable, ['--background', '--factory-startup', '--threads', String(threads), '--python-expr', renderProbe], { encoding: 'utf8', timeout: 30000 })
+      : version;
+    if (runtime.status === 0) ok('Blender', (version.stdout || '').split('\n')[0] + '; headless-рендер и прозрачный WebM доступны');
+    else if (runtime.error?.code === 'ETIMEDOUT') warn('Blender', 'проверка фонового запуска превысила 30 секунд', `Проверьте Blender: ${executable}`);
+    else warn('Blender', 'не запускается для фонового рендера', 'Для Linux установите libegl1, libegl-mesa0 и libgl1-mesa-dri, затем повторите npm run doctor.');
+  } else {
+    warn('Blender', 'не установлен или не настроен', `Установите Blender и укажите путь в blender.executable (${executable}). 3D-сцены останутся недоступны.`);
+  }
+}
+
 // ── Whiteboard Animator ────────────────────────────────
 if (config?.animator?.enabled === false) {
   warn('Animator', 'выключен в настройке', 'Включите animator.enabled в config/project.json, если хотите использовать рисованные сцены.');
