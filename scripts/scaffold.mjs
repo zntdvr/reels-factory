@@ -49,12 +49,13 @@ const accentOf = (text) => {
  * человек уходит с экрана.
  */
 const graphic = blocks.filter((b) => !b.camera);
-const animatorOnCamera = blocks.find((b) => b.camera && b.visualizer === 'animator');
+const animatorOnCamera = blocks.find((b) => b.camera && ['animator', 'effectcraft'].includes(b.visualizer));
 if (animatorOnCamera) stop(`Блок ${animatorOnCamera.id} отмечен и как камера, и как Animator. Сначала решите, кто в кадре.`);
 const animatorBlocks = graphic.filter((b) => b.visualizer === 'animator');
-const remotionBlocks = graphic.filter((b) => b.visualizer !== 'animator');
-const unknownVisualizer = graphic.find((b) => b.visualizer && !['remotion', 'animator'].includes(b.visualizer));
-if (unknownVisualizer) stop(`Неизвестный visualizer «${unknownVisualizer.visualizer}» у блока ${unknownVisualizer.id}. Используйте remotion или animator.`);
+const effectcraftBlocks = graphic.filter((b) => b.visualizer === 'effectcraft');
+const remotionBlocks = graphic.filter((b) => !['animator', 'effectcraft'].includes(b.visualizer));
+const unknownVisualizer = graphic.find((b) => b.visualizer && !['remotion', 'animator', 'effectcraft'].includes(b.visualizer));
+if (unknownVisualizer) stop(`Неизвестный visualizer «${unknownVisualizer.visualizer}» у блока ${unknownVisualizer.id}. Используйте remotion, animator или effectcraft.`);
 const onCamera = blocks.length - graphic.length;
 
 let created = 0;
@@ -67,7 +68,8 @@ for (const block of remotionBlocks) {
     file,
     `import React from 'react';
 import { useCurrentFrame } from 'remotion';
-import { Scene, FitText, color, type, safe, anim, motion } from '../../../core';
+import { Scene, color, type, safe, PAGE_PAD, VIDEO, anim, motion } from '../../../core';
+import type { EditableLayer } from '../../../core';
 
 /**
  * Блок ${block.index}: «${block.text}»
@@ -88,12 +90,9 @@ export const ${name}: React.FC = () => {
   return (
     <Scene>
       <div style={{ marginTop: safe.contentHeight * 0.22, ...appear }}>
-        <FitText step={type.hero} color={color.text}>
-          {'${escape(accentOf(block.text))}'}
-        </FitText>
         <div
           style={{
-            marginTop: 28,
+            marginTop: type.hero.size + 28,
             width: 120,
             height: 6,
             borderRadius: 3,
@@ -105,6 +104,14 @@ export const ${name}: React.FC = () => {
     </Scene>
   );
 };
+
+// Текст отдельным объектом: Remotion и FilmCraft читают одно описание.
+export const ${name}Layers: EditableLayer[] = [{
+  id: 'title', kind: 'text', text: '${escape(accentOf(block.text))}',
+  x: PAGE_PAD, y: safe.top + safe.contentHeight * 0.22,
+  width: VIDEO.width - PAGE_PAD * 2, fontSize: type.hero.size,
+  fontFamily: type.hero.family, fontWeight: type.hero.weight, color: color.text,
+}];
 `,
     'utf8',
   );
@@ -124,10 +131,20 @@ if (animatorBlocks.length) {
     }, null, 2) + '\n', 'utf8');
   }
 }
+for (const block of effectcraftBlocks) {
+  const folder = path.join(dir, 'effectcraft');
+  mkdirSync(folder, { recursive: true });
+  const file = path.join(folder, `${block.id}.json`);
+  if (!existsSync(file)) writeFileSync(file, JSON.stringify({
+    note: 'Заполните steps командами EffectCraft (command, params); comp.new и рендер делает фабрика. Либо сохраните B01.ecproj в этой папке.',
+    steps: [],
+  }, null, 2) + '\n');
+}
+
 done(
   onCamera
-    ? `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, на камере ${onCamera}`
-    : `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}`,
+    ? `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, EffectCraft-сцен: ${effectcraftBlocks.length}, на камере ${onCamera}`
+    : `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, EffectCraft-сцен: ${effectcraftBlocks.length}`,
 );
 
 // ── слова для субтитров ─────────────────────────────────
@@ -155,8 +172,9 @@ const sourceLine = meta.clean.kind === 'video'
   ? `video: '${meta.clean.file}'`
   : `audio: '${meta.clean.file}'`;
 
+const hasLayers = (b) => readFileSync(path.join(scenesDir, `${b.id.toUpperCase()}.tsx`), 'utf8').includes(`export const ${b.id.toUpperCase()}Layers`);
 const imports = remotionBlocks
-  .map((b) => `import { ${b.id.toUpperCase()} } from './scenes/${b.id.toUpperCase()}';`)
+  .map((b) => `import { ${b.id.toUpperCase()}${hasLayers(b) ? `, ${b.id.toUpperCase()}Layers` : ''} } from './scenes/${b.id.toUpperCase()}';`)
   .join('\n');
 const items = blocks
   .map(
@@ -166,7 +184,8 @@ const items = blocks
       frames: ${b.frames},
       ${b.camera ? 'camera: true,' : b.visualizer === 'animator'
         ? `animator: '${meta.id}/animator/${b.id}.webm',`
-        : `scene: ${b.id.toUpperCase()},`}
+        : b.visualizer === 'effectcraft' ? `effectcraft: '${meta.id}/effectcraft/${b.id}.webm',`
+        : `scene: ${b.id.toUpperCase()},${hasLayers(b) ? `\n      layers: ${b.id.toUpperCase()}Layers,` : ''}`}
     },`,
   )
   .join('\n');

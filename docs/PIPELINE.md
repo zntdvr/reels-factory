@@ -227,3 +227,11 @@ npm run blocks -- --project ID --pause 0.2   какая пауза считае�
 
 Живой фоновый слой сам по себе проверку на замирание не проходит — и это
 правильно: он страховка, а не замена сцене.
+
+## Редактируемая выдача Craft
+
+Дополнительный visualizer — `effectcraft`; после scaffold выполните
+`npm run effectcraft -- --project ID --block BLOCK`. После обычного рендера при
+`filmcraft.exportOnRender: true` собирается пакет `.fcproj`. Отдельная команда —
+`npm run filmcraft -- --project ID`. Подписи для правок и удаляемые объекты сцены
+задаются через `block.layers`. Подробности и ограничения — `docs/CRAFT.md`.

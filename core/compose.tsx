@@ -9,6 +9,7 @@ import { planSfx } from './sfx';
 import { SfxLayer } from './SfxLayer';
 import type { Reel, ReelBlock } from './reel';
 import project from '../config/project.json';
+import { EditableLayers } from './editable';
 
 /**
  * СБОРКА РОЛИКА из описания: подложка, слой камеры или аватара, звук, и цепочка
@@ -27,7 +28,7 @@ import project from '../config/project.json';
  * всего ролика одинаково: они не знают и не должны знать, кто сейчас в кадре.
  */
 
-const AvatarLayer: React.FC<{ src: string }> = ({ src }) => {
+export const AvatarLayer: React.FC<{ src: string }> = ({ src }) => {
   const { placement, size } = project.avatar;
   if (placement === 'full') {
     return (
@@ -88,7 +89,7 @@ const GraphicBackdrop: React.FC<{ ranges: Array<[number, number]> }> = ({ ranges
  * `loop` стоит на случай, когда ролик длиннее трека: тишина в конце читается
  * как обрыв. Трек длиннее ролика — обычный случай, лишнее просто не звучит.
  */
-const MusicLayer: React.FC<{ track: string; totalFrames: number }> = ({ track, totalFrames }) => (
+export const MusicLayer: React.FC<{ track: string; totalFrames: number }> = ({ track, totalFrames }) => (
   <Audio
     src={staticFile(track)}
     loop
@@ -99,7 +100,7 @@ const MusicLayer: React.FC<{ track: string; totalFrames: number }> = ({ track, t
   />
 );
 
-const ReelBody: React.FC<{ reel: Reel }> = ({ reel }) => {
+export const ReelBody: React.FC<{ reel: Reel; clean?: boolean }> = ({ reel, clean = false }) => {
   const { source, blocks } = reel;
   const track = pickTrack(reel.id, source.music);
   const cues = planSfx(blocks, { transition: reel.transition, enabled: reel.sfx !== false });
@@ -111,14 +112,14 @@ const ReelBody: React.FC<{ reel: Reel }> = ({ reel }) => {
           <AbsoluteFill>
             {/* objectFit: кадр вертикальный, а прислать могут что угодно —
                 горизонталь обрезается по центру, а не растягивается в блин. */}
-            <OffthreadVideo src={staticFile(source.video)} style={{ objectFit: 'cover' }} />
+            <OffthreadVideo src={staticFile(source.video)} muted={clean} style={{ objectFit: 'cover' }} />
           </AbsoluteFill>
           <GraphicBackdrop ranges={graphicRanges(blocks)} />
         </>
       )}
-      {source.audio && <Audio src={staticFile(source.audio)} />}
-      {track && <MusicLayer track={track} totalFrames={reel.totalFrames} />}
-      <SfxLayer cues={cues} />
+      {!clean && source.audio && <Audio src={staticFile(source.audio)} />}
+      {!clean && track && <MusicLayer track={track} totalFrames={reel.totalFrames} />}
+      {!clean && <SfxLayer cues={cues} />}
 
       <Series>
         {blocks.map((block, index) => {
@@ -136,9 +137,10 @@ const ReelBody: React.FC<{ reel: Reel }> = ({ reel }) => {
               <Seam frames={block.frames} enter={enter} exit={exit}>
               {block.scene ? (
                 <block.scene />
-              ) : block.animator ? (
+              ) : (block.effectcraft || block.animator) ? (
                 <OffthreadVideo
-                  src={staticFile(block.animator)}
+                  src={staticFile((block.effectcraft || block.animator)!)}
+                  transparent
                   muted
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
@@ -146,6 +148,7 @@ const ReelBody: React.FC<{ reel: Reel }> = ({ reel }) => {
                 <AbsoluteFill />
               )}
               </Seam>
+              {!clean && block.layers && <EditableLayers layers={block.layers} frames={block.frames} />}
               {/* Врезка камерного блока идёт поверх видео, но вне зоны лица (см.
                   CameraInset) и ВНЕ склейки: её место в кадре задано числами из
                   настройки, а переход на несколько кадров сдвинул бы её за
@@ -156,9 +159,9 @@ const ReelBody: React.FC<{ reel: Reel }> = ({ reel }) => {
         })}
       </Series>
 
-      {subtitles.mode === 'own' && reel.captions?.length ? <Captions words={reel.captions} /> : null}
+      {!clean && subtitles.mode === 'own' && reel.captions?.length ? <Captions words={reel.captions} /> : null}
 
-      {source.avatar && <AvatarLayer src={source.avatar} />}
+      {!clean && source.avatar && <AvatarLayer src={source.avatar} />}
     </Stage>
   );
 };

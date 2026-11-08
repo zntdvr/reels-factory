@@ -14,3 +14,6 @@ tools/blender/
 tools/blender-mcp/config/
 projects/backup/*.mov
 projects/*/source/original.mov
+
+# Local Craft CLI releases and generated packages
+tools/craft/bin/

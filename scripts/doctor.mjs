@@ -12,6 +12,7 @@ import { execSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { craftBinary } from './lib/craft-client.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const isWindows = process.platform === 'win32';
@@ -144,6 +145,14 @@ if (config?.animator?.enabled === false) {
   } else {
     warn('Animator', 'не найден или не настроено Python-окружение', `Проверьте animator.path в config/project.json и установите зависимости в ${animatorRoot}.`);
   }
+}
+
+// ── Craft editors ──────────────────────────────────────
+for (const app of ['effectcraft', 'filmcraft']) {
+  const binary = craftBinary(app, config ?? {});
+  if (runs(binary, ['--version'])) ok(app, 'CLI доступен');
+  else warn(
+    app, 'CLI не найден — функция пропускается', `Установите официальный ${app}-cli и задайте ${app}.cli или ${app.toUpperCase()}_CLI; инструкция docs/CRAFT.md.`);
 }
 
 // ── Ключи сервисов ──────────────────────────────────────

@@ -6,15 +6,15 @@
   "language": "ru",
 
   "format": {
-    "width": 1920,
-    "height": 1080,
+    "width": 1080,
+    "height": 1920,
     "fps": 30
   },
 
   "safe": {
-    "top": 80,
-    "bottom": 120,
-    "pagePad": 110
+    "top": 290,
+    "bottom": 320,
+    "pagePad": 90
   },
 
   "subtitles": {
@@ -97,6 +97,9 @@
     "enabled": true,
     "path": "tools/Animator"
   },
+
+  "effectcraft": { "cli": "" },
+  "filmcraft": { "cli": "", "exportOnRender": true },
 
   "render": {
     "crf": 18,

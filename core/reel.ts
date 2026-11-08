@@ -1,4 +1,6 @@
 import type React from 'react';
+import type { EditableLayer } from './editable';
+import { validateLayers } from './craft-contract.mjs';
 import { VIDEO } from './format';
 import type { CaptionWord } from './caption-pages';
 import { autoTransition, isTransition, transitionNames } from './transitions';
@@ -36,6 +38,10 @@ export interface ReelBlock {
   scene?: React.FC;
   /** Клип с альфа-каналом, подготовленный Animator для whiteboard-сцен. */
   animator?: string;
+  /** Transparent clip rendered from EffectCraft. */
+  effectcraft?: string;
+  /** Separate objects shared by Remotion and the editable FilmCraft export. */
+  layers?: EditableLayer[];
   /**
    * Блок отдан говорящему человеку: показываются кадры присланного видео.
    * Графическая сцена для такого блока не создаётся — и это главная экономия
@@ -157,19 +163,22 @@ export function defineReel(input: Omit<Reel, 'totalFrames'> & { audioSeconds?: n
   // блок без сцены и без пометки «камера» отрендерится пустым фоном, и увидят
   // это только на готовом файле.
   for (const b of written) {
-    const visualModes = Number(!!b.camera) + Number(!!b.scene) + Number(!!b.animator);
+    const visualModes = Number(!!b.camera) + Number(!!b.scene) + Number(!!b.animator) + Number(!!b.effectcraft);
     if (visualModes > 1) {
       throw new Error(
         `Ролик «${id}», блок «${b.id}»: выбрано больше одного источника изображения. ` +
-          `Укажите что-то одно: camera, scene или animator.`,
+          `Укажите что-то одно: camera, scene, animator или effectcraft.`,
       );
     }
-    if (visualModes === 0) {
+    if (visualModes === 0 && !b.layers?.length) {
       throw new Error(
         `Ролик «${id}», блок «${b.id}»: не сказано, что на экране. ` +
-          `Выберите scene, animator или camera: true.`,
+          `Выберите scene, animator, effectcraft или camera: true.`,
       );
     }
+    validateLayers(b.layers ?? [], b.frames);
+    if (b.effectcraft && typeof b.effectcraft !== 'string') throw new Error('effectcraft должен быть путём к клипу');
+    if (b.layers?.length && b.camera) throw new Error('Редактируемые слои используйте на графических блоках; врезки камеры — через inset');
     if (b.animator && typeof b.animator !== 'string') {
       throw new Error(`Ролик «${id}», блок «${b.id}»: animator должен быть путём к видеофайлу.`);
     }

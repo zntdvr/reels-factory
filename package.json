@@ -24,7 +24,11 @@
     "shots": "node scripts/shots.mjs",
     "animator": "node scripts/animator.mjs",
     "probe": "node scripts/probe.mjs",
-    "kb": "node scripts/kb.mjs"
+    "kb": "node scripts/kb.mjs",
+    "effectcraft": "node scripts/effectcraft.mjs",
+    "filmcraft": "node scripts/filmcraft.mjs",
+    "craft-demo": "node scripts/craft-demo.mjs",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@remotion/captions": "^4.0.286",
@@ -33,7 +37,9 @@
     "puppeteer-core": "23.11.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "remotion": "4.0.286"
+    "remotion": "4.0.286",
+    "@remotion/bundler": "4.0.286",
+    "@remotion/renderer": "4.0.286"
   },
   "devDependencies": {
     "@types/react": "19.0.0",

@@ -29,3 +29,6 @@ export * as anim from './anim';
 export * as motion from './motion';
 export { dur, ease, entry, pulse, transition } from './timing';
 export type { StylePack, StyleTokens, TypeStep, TypeScale } from './style-contract';
+
+export { EditableLayers } from './editable';
+export type { EditableLayer, EditableText, EditableRender } from './editable';

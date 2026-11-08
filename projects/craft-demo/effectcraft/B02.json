@@ -1,0 +1,7 @@
+{
+  "steps": [
+    {"command":"layer.newSolid","params":{"name":"Packet","color":"#245CFF","width":120,"height":80}},
+    {"command":"prop.addKey","params":{"layer":"$1.layer","path":"transform/position","time":0,"value":[500,600]}},
+    {"command":"prop.addKey","params":{"layer":"$1.layer","path":"transform/position","time":2,"value":[1300,600]}}
+  ]
+}

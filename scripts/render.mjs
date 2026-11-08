@@ -13,6 +13,8 @@ import {
   args, done, ensureDir, note, p, readConfig, readJSON, reelOutputs, runLoud, say, step, stop,
 } from './lib/util.mjs';
 import { normalizeLoudness } from './lib/loudness.mjs';
+import { craftBinary } from './lib/craft-client.mjs';
+import { spawnSync } from 'node:child_process';
 
 const options = args();
 if (!options.project) stop('Не указан проект: --project <идентификатор>');
@@ -164,3 +166,16 @@ try {
 
 step('Проверяю результат');
 runLoud('node', [p('scripts', 'check.mjs'), '--project', meta.id]);
+
+if (config.filmcraft?.exportOnRender === true && !options['no-filmcraft']) {
+  step('Создаю редактируемый проект FilmCraft');
+  if (spawnSync(craftBinary('filmcraft', config), ['--version'], { stdio: 'ignore' }).status !== 0) {
+    note('FilmCraft не установлен — редактируемый проект пропущен, ролик готов. Установка: docs/CRAFT.md.');
+  } else {
+    try {
+      runLoud('node', [p('scripts', 'filmcraft.mjs'), '--project', meta.id]);
+    } catch {
+      note(`Ролик готов, но проект FilmCraft не собрался. Повторить: npm run filmcraft -- --project ${meta.id}`);
+    }
+  }
+}
