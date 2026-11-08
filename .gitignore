@@ -20,3 +20,4 @@ projects/*/source/original.mov
 
 # Local Craft CLI releases and generated packages
 tools/craft/bin/
+__pycache__/
