@@ -14,13 +14,14 @@
  *   распознавание — GigaAM и Silero VAD в своём окружении tools/asr-venv
  *   модели  — веса распознавания, скачиваются в models один раз
  *   Animator — библиотеки whiteboard-рендера в tools/Animator/.venv
+ *   видеовставки — CLIP в tools/footage-venv, его веса в models/clip, и yt-dlp
  *
  * Скрипт ничего не делает молча и не просит прав администратора там, где можно
  * обойтись без них. Если шаг требует пароля — он честно останавливается и даёт
  * человеку команду, которую тот выполнит сам.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync } from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline/promises';
 import {
@@ -232,6 +233,68 @@ if (config.animator?.enabled === false) {
   }
 } else {
   note('Пропущено. Установить зависимости Animator можно командой npm run install-deps.');
+}
+
+// ── 6. Видеовставки ─────────────────────────────────────
+/**
+ * Живые кадры под фразу подбирает модель CLIP: она сравнивает кадры с
+ * описанием прямо на этом компьютере, без токенов и без интернета. Своё
+ * окружение — tools/footage-venv, веса — models/clip. yt-dlp нужен для поиска
+ * на YouTube и для ссылок в банк отрывков.
+ */
+step('Видеовставки — подбор кадров моделью CLIP');
+const FOOTAGE_VENV = p('tools', 'footage-venv');
+const footagePython = path.join(FOOTAGE_VENV, isWindows ? 'Scripts/python.exe' : 'bin/python');
+const clipDir = p(config.transcribe?.models ?? 'models', 'clip');
+const CLIP_REPO = 'https://huggingface.co/Xenova/clip-vit-base-patch32/resolve/main';
+const CLIP_FILES = [['onnx/vision_model.onnx', 'vision_model.onnx'], ['onnx/text_model.onnx', 'text_model.onnx'], ['tokenizer.json', 'tokenizer.json']];
+const footageReady = () => existsSync(footagePython) &&
+  CLIP_FILES.every(([, name]) => existsSync(path.join(clipDir, name))) &&
+  spawnSync(footagePython, [p('scripts', 'footage', 'clip.py'), 'check', '--models', clipDir]).status === 0;
+
+if (config.footage?.enabled === false) {
+  note('Видеовставки выключены в настройке.');
+} else if (footageReady()) {
+  done('уже установлено');
+} else if (await confirm('Установить подбор видеовставок? Это около 100 МБ библиотек и 600 МБ модели, один раз.')) {
+  try {
+    if (!existsSync(footagePython)) {
+      const python = findPython();
+      if (!python) stop('Для видеовставок нужен Python 3.10 или новее — сначала шаг распознавания речи выше.');
+      runLoud(python.command, [...python.prefix, '-m', 'venv', FOOTAGE_VENV]);
+    }
+    runLoud(footagePython, ['-m', 'pip', 'install', '--disable-pip-version-check', '-r', p('scripts', 'footage', 'requirements.txt')]);
+    mkdirSync(clipDir, { recursive: true });
+    for (const [remote, name] of CLIP_FILES) {
+      const target = path.join(clipDir, name);
+      if (existsSync(target)) continue;
+      say(`  Скачиваю ${name}…`);
+      // Сначала во временный файл: оборванная закачка не должна выглядеть готовой моделью.
+      runLoud('curl', ['-fL', '--retry', '3', '-o', `${target}.part`, `${CLIP_REPO}/${remote}`]);
+      renameSync(`${target}.part`, target);
+    }
+    if (!footageReady()) throw new Error('модель CLIP не запускается');
+    done('подбор вставок установлен');
+  } catch (error) {
+    problem(`Не получилось: ${error.message}`);
+    say('  Проверьте интернет и запустите шаг снова — скачанное не пропадёт.');
+    process.exit(1);
+  }
+} else {
+  note('Пропущено. Без этого шага ИИ не сможет ставить живые кадры под фразу.');
+}
+
+if (config.footage?.enabled !== false && config.footage?.youtube !== false && !has('yt-dlp')) {
+  if (await confirm('Поставить yt-dlp для поиска вставок на YouTube?')) {
+    try {
+      if (isMac) runLoud('brew', ['install', 'yt-dlp']);
+      else if (isWindows) runLoud('winget', ['install', '--id', 'yt-dlp.yt-dlp', '-e', '--accept-source-agreements', '--accept-package-agreements']);
+      else runLoud(footagePython, ['-m', 'pip', 'install', '--disable-pip-version-check', 'yt-dlp']);
+      done('yt-dlp установлен');
+    } catch (error) {
+      problem(`yt-dlp не поставился: ${error.message}. Вставки будут искаться в банке и на Pexels.`);
+    }
+  }
 }
 
 // Выбор модели запоминается: расшифровка возьмёт ту, что скачана.

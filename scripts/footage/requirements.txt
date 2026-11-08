@@ -1,0 +1,9 @@
+# Подбор видеовставок: CLIP через ONNX, только процессор.
+# Ставится в tools/footage-venv командой npm run install-deps — руками не нужно.
+onnxruntime>=1.18
+numpy>=1.26
+pillow>=10.0
+tokenizers>=0.15
+# Поиск и скачивание с YouTube. Свой, а не системный: YouTube часто меняется,
+# и устаревший yt-dlp получает отказ. Обновляется повторным npm run install-deps.
+yt-dlp[default]

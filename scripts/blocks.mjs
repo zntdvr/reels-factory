@@ -125,7 +125,7 @@ const blocks = groups.map((group, i) => {
     frames,
     text: group.map((w) => w.text).join(' '),
     camera: shotOnCamera, // true — в кадре говорящий человек, сцена не нужна
-    visualizer: 'remotion', // ИИ меняет на animator для whiteboard или blender для объёмной 3D-сцены
+    visualizer: 'remotion', // ИИ меняет на animator (whiteboard), blender (3D) или footage (живые кадры)
     scene: null,      // имя файла сцены — появится при сборке
     metaphor: null,   // чем кадр иллюстрирует смысл
   };

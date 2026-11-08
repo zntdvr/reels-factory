@@ -147,6 +147,29 @@ if (config?.blender?.enabled === false) {
   }
 }
 
+// ── Видеовставки ───────────────────────────────────────
+if (config?.footage?.enabled === false) {
+  ok('Видеовставки', 'выключены в настройке');
+} else {
+  const venv = path.join(root, 'tools', 'footage-venv', isWindows ? 'Scripts/python.exe' : 'bin/python');
+  const models = path.join(root, config?.transcribe?.models ?? 'models', 'clip');
+  if (!existsSync(venv) || !existsSync(path.join(models, 'vision_model.onnx'))) {
+    warn('Видеовставки', 'модель подбора кадров (CLIP) не установлена', 'Запустите npm run install-deps — это около 600 МБ, один раз.');
+  } else {
+    const probe = spawnSync(venv, [path.join(root, 'scripts', 'footage', 'clip.py'), 'check', '--models', models], { encoding: 'utf8', timeout: 60000 });
+    const sources = ['свой банк'];
+    if (readEnv().PEXELS_API_KEY) sources.push('Pexels');
+    if (config?.footage?.youtube !== false && has('yt-dlp')) {
+      sources.push(config?.footage?.creativeCommonsOnly === false ? 'YouTube' : 'YouTube (Creative Commons)');
+    }
+    if (probe.status === 0) ok('Видеовставки', `CLIP работает; источники: ${sources.join(', ')}`);
+    else warn('Видеовставки', 'модель CLIP не запускается', 'Повторите npm run install-deps.');
+    if (config?.footage?.youtube !== false && !has('yt-dlp')) {
+      warn('yt-dlp', 'не установлен — поиск вставок на YouTube недоступен', isMac ? 'brew install yt-dlp' : 'Запустите npm run install-deps.');
+    }
+  }
+}
+
 // ── Whiteboard Animator ────────────────────────────────
 if (config?.animator?.enabled === false) {
   warn('Animator', 'выключен в настройке', 'Включите animator.enabled в config/project.json, если хотите использовать рисованные сцены.');

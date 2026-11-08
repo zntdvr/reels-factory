@@ -24,6 +24,7 @@
     "shots": "node scripts/shots.mjs",
     "animator": "node scripts/animator.mjs",
     "blender": "node scripts/blender.mjs",
+    "footage": "node scripts/footage.mjs",
     "probe": "node scripts/probe.mjs",
     "kb": "node scripts/kb.mjs",
     "effectcraft": "node scripts/effectcraft.mjs",

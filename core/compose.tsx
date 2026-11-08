@@ -137,6 +137,16 @@ export const ReelBody: React.FC<{ reel: Reel; clean?: boolean }> = ({ reel, clea
               <Seam frames={block.frames} enter={enter} exit={exit}>
               {block.scene ? (
                 <block.scene />
+              ) : block.footage ? (
+                /* Живые кадры непрозрачны и закрывают весь экран: это не
+                   графика поверх фона, а сама картинка блока. */
+                <AbsoluteFill>
+                  <OffthreadVideo
+                    src={staticFile(block.footage)}
+                    muted
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </AbsoluteFill>
               ) : (block.effectcraft || block.animator || block.blender) ? (
                 <OffthreadVideo
                   src={staticFile((block.effectcraft || block.animator || block.blender)!)}

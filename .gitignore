@@ -11,6 +11,9 @@ projects/*/work/
 .DS_Store
 *.log
 tools/blender/
+tools/footage-venv/
+footage/*
+!footage/README.md
 tools/blender-mcp/config/
 projects/backup/*.mov
 projects/*/source/original.mov

@@ -49,15 +49,16 @@ const accentOf = (text) => {
  * человек уходит с экрана.
  */
 const graphic = blocks.filter((b) => !b.camera);
-const toolOnCamera = blocks.find((b) => b.camera && ['animator', 'effectcraft', 'blender'].includes(b.visualizer));
+const toolVisualizers = ['animator', 'effectcraft', 'blender', 'footage'];
+const toolOnCamera = blocks.find((b) => b.camera && toolVisualizers.includes(b.visualizer));
 if (toolOnCamera) stop(`Блок ${toolOnCamera.id} отмечен и как камера, и как ${toolOnCamera.visualizer}. Сначала решите, кто в кадре.`);
 const animatorBlocks = graphic.filter((b) => b.visualizer === 'animator');
 const effectcraftBlocks = graphic.filter((b) => b.visualizer === 'effectcraft');
 const blenderBlocks = graphic.filter((b) => b.visualizer === 'blender');
-const toolVisualizers = ['animator', 'effectcraft', 'blender'];
+const footageBlocks = graphic.filter((b) => b.visualizer === 'footage');
 const remotionBlocks = graphic.filter((b) => !toolVisualizers.includes(b.visualizer));
 const unknownVisualizer = graphic.find((b) => b.visualizer && !['remotion', ...toolVisualizers].includes(b.visualizer));
-if (unknownVisualizer) stop(`Неизвестный visualizer «${unknownVisualizer.visualizer}» у блока ${unknownVisualizer.id}. Используйте remotion, animator, effectcraft или blender.`);
+if (unknownVisualizer) stop(`Неизвестный visualizer «${unknownVisualizer.visualizer}» у блока ${unknownVisualizer.id}. Используйте remotion, animator, effectcraft, blender или footage.`);
 const onCamera = blocks.length - graphic.length;
 
 let created = 0;
@@ -208,8 +209,29 @@ def build_scene(bpy, scene, params):
 `, 'utf8');
   }
 }
+if (footageBlocks.length) {
+  const footageDir = path.join(dir, 'footage');
+  mkdirSync(footageDir, { recursive: true });
+  for (const block of footageBlocks) {
+    const planFile = path.join(footageDir, `${block.id}.json`);
+    if (existsSync(planFile)) continue;
+    writeFileSync(planFile, JSON.stringify({
+      text: block.text,
+      seconds: block.seconds,
+      query: [],
+      search: '',
+      negative: [],
+      sources: ['bank', 'pexels', 'youtube'],
+      picked: null,
+      note: 'query — 1–3 описания кадра по-английски, как подпись к фото. search — строка для поиска на YouTube и Pexels. ' +
+        'Затем: npm run footage -- --project ' + meta.id + ' --block ' + block.id,
+    }, null, 2) + '\n', 'utf8');
+  }
+}
+
 const counts = `Remotion-сцен создано: ${created}, Animator-сцен: ${animatorBlocks.length}, ` +
-  `EffectCraft-сцен: ${effectcraftBlocks.length}, Blender-сцен: ${blenderBlocks.length}`;
+  `EffectCraft-сцен: ${effectcraftBlocks.length}, Blender-сцен: ${blenderBlocks.length}, ` +
+  `вставок: ${footageBlocks.length}`;
 done(onCamera ? `${counts}, на камере ${onCamera}` : counts);
 
 // ── слова для субтитров ─────────────────────────────────
@@ -251,6 +273,7 @@ const items = blocks
         ? `animator: '${meta.id}/animator/${b.id}.webm',`
         : b.visualizer === 'effectcraft' ? `effectcraft: '${meta.id}/effectcraft/${b.id}.webm',`
         : b.visualizer === 'blender' ? `blender: '${meta.id}/blender/${b.id}.webm',`
+        : b.visualizer === 'footage' ? `footage: '${meta.id}/footage/${b.id}.mp4',`
         : `scene: ${b.id.toUpperCase()},${hasLayers(b) ? `\n      layers: ${b.id.toUpperCase()}Layers,` : ''}`}
     },`,
   )
@@ -273,7 +296,7 @@ ${hasWords ? "import captions from './captions.json';\n" : ''}${imports}
  * картинка разъезжается с голосом.${onCamera ? `
  *
  * У каждого блока выбран способ визуализации в work/blocks.json: camera,
- * Remotion-сцена, Animator-клип или Blender-клип. Чтобы изменить выбор, правьте visualizer
+ * Remotion-сцена, Animator-клип, Blender-клип или видеовставка. Чтобы изменить выбор, правьте visualizer
  * там и пересоберите каркас.` : ''}
  */
 export default defineReel({

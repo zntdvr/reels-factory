@@ -109,6 +109,17 @@
     "threads": 4
   },
 
+  "footage": {
+    "enabled": true,
+    "youtube": true,
+    "creativeCommonsOnly": true,
+    "pexels": true,
+    "candidates": 4,
+    "previewSeconds": 150,
+    "maxSlowdown": 1.5,
+    "minScore": 0.24
+  },
+
   "render": {
     "crf": 18,
     "concurrency": 2,

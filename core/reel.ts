@@ -45,6 +45,11 @@ export interface ReelBlock {
   /** Прозрачный 3D-клип, отрендеренный Blender для блока. */
   blender?: string;
   /**
+   * Видеовставка: живые кадры под фразу, во весь экран и без прозрачности.
+   * Готовит `npm run footage` — находит кусок, режет вертикаль под длину блока.
+   */
+  footage?: string;
+  /**
    * Блок отдан говорящему человеку: показываются кадры присланного видео.
    * Графическая сцена для такого блока не создаётся — и это главная экономия
    * работы: отрисовывать нужно только те блоки, где человек уходит с экрана.
@@ -166,18 +171,21 @@ export function defineReel(input: Omit<Reel, 'totalFrames'> & { audioSeconds?: n
   // это только на готовом файле.
   for (const b of written) {
     const visualModes = Number(!!b.camera) + Number(!!b.scene) + Number(!!b.animator) +
-      Number(!!b.effectcraft) + Number(!!b.blender);
+      Number(!!b.effectcraft) + Number(!!b.blender) + Number(!!b.footage);
     if (visualModes > 1) {
       throw new Error(
         `Ролик «${id}», блок «${b.id}»: выбрано больше одного источника изображения. ` +
-          `Укажите что-то одно: camera, scene, animator, effectcraft или blender.`,
+          `Укажите что-то одно: camera, scene, animator, effectcraft, blender или footage.`,
       );
     }
     if (visualModes === 0 && !b.layers?.length) {
       throw new Error(
         `Ролик «${id}», блок «${b.id}»: не сказано, что на экране. ` +
-          `Выберите scene, animator, effectcraft, blender или camera: true.`,
+          `Выберите scene, animator, effectcraft, blender, footage или camera: true.`,
       );
+    }
+    if (b.footage && typeof b.footage !== 'string') {
+      throw new Error(`Ролик «${id}», блок «${b.id}»: footage должен быть путём к видеофайлу.`);
     }
     validateLayers(b.layers ?? [], b.frames);
     if (b.effectcraft && typeof b.effectcraft !== 'string') throw new Error('effectcraft должен быть путём к клипу');
