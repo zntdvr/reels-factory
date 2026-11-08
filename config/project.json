@@ -1,0 +1,111 @@
+{
+  "$schema": "./schema.md",
+  "configVersion": 1,
+  "configured": true,
+
+  "language": "ru",
+
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+
+  "safe": {
+    "top": 80,
+    "bottom": 120,
+    "pagePad": 110
+  },
+
+  "subtitles": {
+    "mode": "own",
+    "look": "white",
+    "position": 0.08,
+    "chunk": "page",
+    "size": 0.58,
+    "plate": true,
+    "highlight": true,
+    "accent": "#245CFF"
+  },
+
+  "sfx": {
+    "enabled": true,
+    "volume": 1.0,
+    "seams": true
+  },
+
+  "music": {
+    "enabled": true,
+    "track": "auto",
+    "volume": 0.15,
+    "fadeIn": 1.5,
+    "fadeOut": 2.5
+  },
+
+  "style": {
+    "path": "./style"
+  },
+
+  "voice": {
+    "elevenlabs": {
+      "enabled": false,
+      "voiceId": "",
+      "modelId": "eleven_multilingual_v2",
+      "stability": 0.4,
+      "similarityBoost": 0.75,
+      "speed": 1.0
+    }
+  },
+
+  "avatar": {
+    "provider": "none",
+    "avatarId": "",
+    "placement": "corner",
+    "size": 0.32
+  },
+
+  "transcribe": {
+    "engine": "gigaam",
+    "models": "models",
+    "quantization": "",
+    "language": "ru"
+  },
+
+  "cleanup": {
+    "enabled": true,
+    "silenceThresholdDb": -45,
+    "minSilenceSec": 1.0,
+    "keepPadSec": 0.25,
+    "cutFillers": true,
+    "cutRepeats": true,
+    "voicePolish": true,
+    "fillers": ["ээ", "эээ", "ммм", "эм", "а-а", "а-а-а", "э-э", "м-м"],
+    "videoCutStyle": "none"
+  },
+
+  "shots": {
+    "enabled": true,
+    "web": true,
+    "chromePath": "",
+    "maxPerReel": 4,
+    "waitMs": 15000,
+    "parallel": 6,
+    "viewport": { "width": 1440, "height": 900, "scale": 2 }
+  },
+
+  "animator": {
+    "enabled": true,
+    "path": "tools/Animator"
+  },
+
+  "render": {
+    "crf": 18,
+    "concurrency": 2,
+    "outputDir": "../OUT REELS",
+    "loudness": {
+      "normalize": true,
+      "targetLufs": -13,
+      "truePeak": -1
+    }
+  }
+}

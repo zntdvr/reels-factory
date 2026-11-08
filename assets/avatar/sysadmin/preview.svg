@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-label="Стилизованный системный администратор в очках и гарнитуре">
+  <rect width="720" height="900" fill="#F2F0EA"/>
+  <ellipse cx="360" cy="845" rx="190" ry="23" fill="#D9D8D3"/>
+  <path d="M236 476 Q267 435 360 435 Q453 435 484 476 L515 794 Q437 831 360 831 Q283 831 205 794Z" fill="#202734"/>
+  <path d="M310 465 Q360 506 410 465 L399 777 L321 777Z" fill="#F2F0EA"/>
+  <path d="M360 497 L360 778" stroke="#245CFF" stroke-width="9" stroke-linecap="round"/>
+  <path d="M281 485 Q247 496 231 548 L203 710" fill="none" stroke="#202734" stroke-width="72" stroke-linecap="round"/>
+  <path d="M439 485 Q473 496 489 548 L517 710" fill="none" stroke="#202734" stroke-width="72" stroke-linecap="round"/>
+  <ellipse cx="201" cy="728" rx="31" ry="40" fill="#C98F70"/><ellipse cx="519" cy="728" rx="31" ry="40" fill="#C98F70"/>
+  <path d="M265 497 Q360 538 455 497" fill="none" stroke="#111827" stroke-width="12"/>
+  <rect x="418" y="552" width="59" height="77" rx="7" fill="#F2F0EA" transform="rotate(7 448 590)"/>
+  <path d="M420 564 L474 570" stroke="#245CFF" stroke-width="9"/>
+  <circle cx="441" cy="593" r="9" fill="#8F9AA8"/><path d="M452 593 h13 M452 602 h12" stroke="#8F9AA8" stroke-width="4"/>
+  <rect x="323" y="400" width="74" height="83" rx="29" fill="#C98F70"/>
+  <ellipse cx="360" cy="291" rx="129" ry="164" fill="#C98F70"/>
+  <ellipse cx="232" cy="314" rx="22" ry="37" fill="#AA6D53"/><ellipse cx="488" cy="314" rx="22" ry="37" fill="#AA6D53"/>
+  <path d="M232 287 Q225 149 351 132 Q493 127 490 277 Q466 232 436 211 Q343 243 245 220Z" fill="#252127"/>
+  <path d="M256 198 Q314 174 379 195 Q315 236 241 232Z" fill="#252127"/>
+  <path d="M232 309 Q226 135 360 126 Q495 135 488 309" fill="none" stroke="#171B24" stroke-width="14"/>
+  <rect x="475" y="266" width="35" height="91" rx="16" fill="#171B24"/>
+  <circle cx="500" cy="304" r="10" fill="#245CFF"/>
+  <path d="M490 332 Q483 396 427 397" fill="none" stroke="#8F9AA8" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="426" cy="398" rx="16" ry="12" fill="#171B24"/>
+  <rect x="250" y="279" width="100" height="72" rx="25" fill="#BAC7D1" stroke="#171B24" stroke-width="13"/>
+  <rect x="370" y="279" width="100" height="72" rx="25" fill="#BAC7D1" stroke="#171B24" stroke-width="13"/>
+  <path d="M350 309 Q360 303 370 309" fill="none" stroke="#171B24" stroke-width="12"/>
+  <circle cx="309" cy="317" r="9" fill="#1B1B20"/><circle cx="411" cy="317" r="9" fill="#1B1B20"/>
+  <path d="M353 332 L345 358 Q360 367 372 358" fill="#AA6D53"/>
+  <path d="M327 397 Q360 416 394 397" fill="none" stroke="#AA6D53" stroke-width="7" stroke-linecap="round"/>
+  <path d="M264 804 L264 833 M456 804 L456 833" stroke="#111827" stroke-width="63" stroke-linecap="round"/>
+  <ellipse cx="266" cy="842" rx="68" ry="23" fill="#151A22"/><ellipse cx="454" cy="842" rx="68" ry="23" fill="#151A22"/>
+</svg>

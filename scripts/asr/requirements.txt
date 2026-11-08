@@ -1,0 +1,3 @@
+# Распознавание речи: GigaAM + Silero VAD через ONNX, только процессор.
+# Ставится в tools/asr-venv командой npm run install-deps — руками не нужно.
+onnx-asr[cpu,hub]==0.12.0

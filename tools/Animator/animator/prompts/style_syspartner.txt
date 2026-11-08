@@ -1,0 +1,18 @@
+Style: a minimal hand-drawn whiteboard doodle on a PURE WHITE background
+(#FFFFFF, flat, no paper texture, no vignette).
+Ink: clean black marker lines of even thickness. The ONLY colour allowed is one
+blue, #245CFF, used for at most one or two key elements that the frame is about;
+everything else is black line art, optionally with white or very light grey
+flat fills. No other colours at all.
+Forbidden: gradients, shading, glow, shadows, 3D, photorealism, texture,
+background scenery, confetti, dots, specks, sparkles, stars, decorations,
+borders, frames, watermarks, signatures.
+Text: NO text anywhere except the exact captions listed above. A caption is
+short black uppercase hand lettering, spelled EXACTLY as given (it may be
+Cyrillic), placed next to its own element, and appears once. Elements marked
+"no caption" have no text near them.
+Composition: elements are simple, bold and readable at small size, clearly
+separated by generous white space; nothing touches or overlaps. Arrows are
+thin black hand-drawn lines that stop short of the elements they connect.
+Use the whole {aspect} canvas but keep a white margin around the edges.
+Draw ONLY the listed elements.

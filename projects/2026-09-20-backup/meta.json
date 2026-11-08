@@ -1,0 +1,18 @@
+{
+  "id": "2026-09-20-backup",
+  "title": "backup",
+  "createdAt": "2026-09-20T14:20:09.123Z",
+  "topic": null,
+  "source": {
+    "kind": "video",
+    "file": "projects/2026-09-20-backup/source/original.mov"
+  },
+  "durationSeconds": 86.371655,
+  "fps": 30,
+  "stage": "scenes",
+  "clean": {
+    "file": "2026-09-20-backup/clean.mp4",
+    "durationSeconds": 84.9,
+    "kind": "video"
+  }
+}

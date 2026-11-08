@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "blender": {
+      "command": "/home/rob/projects/reelfactory/tools/blender-mcp/run-mcp.sh",
+      "args": []
+    }
+  }
+}
