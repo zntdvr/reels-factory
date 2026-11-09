@@ -134,32 +134,30 @@ export const ASR_SCRIPT = p('scripts', 'asr', 'transcribe.py');
 
 // ── куда попадают готовые ролики ────────────────────────
 /**
- * Готовые ролики складываются в общую папку РЯДОМ с системой — по умолчанию
- * `OUT REELS` там же, где лежит сама папка системы.
+ * Готовый ролик лежит в папке своего проекта: `projects/<id>/ready.mp4`.
+ * Рядом с ним — исходники, сцены и рабочие файлы того же ролика, искать не
+ * по разным папкам.
  *
- * Почему снаружи: внутрь системы человек не ходит, а за роликами ходит каждый
- * день. Искать их по папкам проектов — лишняя работа, и рано или поздно кто-то
- * начнёт наводить порядок внутри рабочих файлов.
- *
- * Путь считается от корня системы, а не от того, откуда запущена команда:
- * иначе результат зависел бы от текущей папки терминала.
+ * `config.render.outputDir` при этом можно задать отдельно (например, для
+ * экспорта вовне) — если он указан, готовый файл складывается туда вместо
+ * папки проекта.
  */
-export function readyDir(config) {
-  const dir = config?.render?.outputDir || '../OUT REELS';
-  return path.resolve(ROOT, dir);
+export function readyDir(config, projectDir) {
+  const dir = config?.render?.outputDir;
+  if (dir) return path.resolve(ROOT, dir);
+  return projectDir;
 }
 
 /**
- * Где лежит готовый файл ролика. Место одно — общая папка: вторая копия в папке
- * проекта только занимала бы место.
+ * Где лежит готовый файл ролика.
  */
-export function reelOutputs(meta, config) {
-  return { ready: path.join(readyDir(config), `${meta.id}.mp4`) };
+export function reelOutputs(meta, config, projectDir) {
+  return { ready: path.join(readyDir(config, projectDir), `${meta.id}.mp4`) };
 }
 
 /** Путь к готовому ролику — или null, если ролик ещё не собран. */
-export function findReel(meta, config) {
-  const { ready } = reelOutputs(meta, config);
+export function findReel(meta, config, projectDir) {
+  const { ready } = reelOutputs(meta, config, projectDir);
   return existsSync(ready) ? ready : null;
 }
 

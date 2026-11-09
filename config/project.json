@@ -123,7 +123,6 @@
   "render": {
     "crf": 18,
     "concurrency": 2,
-    "outputDir": "../OUT REELS",
     "loudness": {
       "normalize": true,
       "targetLufs": -13,

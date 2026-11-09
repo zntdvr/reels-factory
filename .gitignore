@@ -20,4 +20,8 @@ projects/*/source/original.mov
 
 # Local Craft CLI releases and generated packages
 tools/craft/bin/
+projects/*-filmcraft-*/
+projects/*/*-filmcraft-*/
+projects/*/*.mp4
+projects/vpn/
 __pycache__/

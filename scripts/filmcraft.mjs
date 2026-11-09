@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import os from 'node:os';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
 import { args, p, readConfig, readJSON, writeJSON, readyDir, done, run, stop } from './lib/util.mjs';
@@ -15,7 +15,7 @@ const config = readConfig();
 const dir = p('projects', options.project);
 const meta = readJSON(path.join(dir, 'meta.json'));
 if (!existsSync(path.join(dir, 'reel.tsx'))) stop('Нет reel.tsx; сначала создайте сцены.');
-const outParent = options.out ? path.resolve(String(options.out)) : readyDir(config);
+const outParent = options.out ? path.resolve(String(options.out)) : readyDir(config, dir);
 mkdirSync(outParent, { recursive: true });
 const output = mkdtempSync(path.join(outParent, `${meta.id}-filmcraft-`));
 const scratch = mkdtempSync(path.join(os.tmpdir(), 'reels-craft-'));
@@ -56,8 +56,18 @@ try {
       frameRange: [start, start + frames - 1], chromiumOptions,
       concurrency: config.render?.concurrency ?? 2, ...(audio ? {} : { muted: true }),
     });
-    const info = JSON.parse(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'json', file]));
-    if (Math.abs(Number(info.format.duration) - frames / manifest.fps) > 1 / manifest.fps + 0.01) throw new Error(`Длительность ${name} не совпала с таймлайном.`);
+    const probe = () => Number(JSON.parse(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'json', file])).format.duration);
+    const target = frames / manifest.fps;
+    let duration = probe();
+    // Сборщик звука отрезает хвост на доли секунды (на этом ролике — 0.08с). Это тишина,
+    // поэтому дописываем её до длины таймлайна; расхождение больше 0.25с — настоящая ошибка.
+    if (audio && duration < target && target - duration <= 0.25) {
+      const padded = file.replace(/\.wav$/, '.padded.wav');
+      run('ffmpeg', ['-y', '-i', file, '-af', `apad=whole_dur=${target}`, '-t', String(target), padded]);
+      renameSync(padded, file);
+      duration = probe();
+    }
+    if (Math.abs(duration - target) > 1 / manifest.fps + 0.01) throw new Error(`Длительность ${name} не совпала с таймлайном.`);
     if (!audio) verifyCraftVideo(file, { ...manifest, frames, alpha });
     media.push({ name, file, start, frames, track, audio });
   };

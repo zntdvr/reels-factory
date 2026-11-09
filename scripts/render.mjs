@@ -28,7 +28,7 @@ if (!existsSync(path.join(dir, 'reel.tsx'))) {
   stop(`У проекта нет описания ролика. Сначала: node scripts/scaffold.mjs --project ${meta.id}`);
 }
 
-const outputs = reelOutputs(meta, config);
+const outputs = reelOutputs(meta, config, dir);
 const temporary = path.join(workDir, 'render.mp4');
 ensureDir(workDir);
 
@@ -122,8 +122,9 @@ if (failure) {
 done('видео собрано');
 
 /**
- * Громкость приводится к принятому уровню ДО того, как ролик уйдёт в общую
- * папку: человек забирает оттуда готовое и больше ничего с ним не делает.
+ * Громкость приводится к принятому уровню ДО того, как ролик встанет на
+ * финальное место: человек забирает оттуда готовое и больше ничего с ним не
+ * делает.
  */
 const loudness = config.render?.loudness ?? {};
 if (loudness.normalize !== false) {
@@ -142,24 +143,23 @@ if (loudness.normalize !== false) {
 }
 
 /**
- * Готовый ролик живёт в одном месте — в общей папке рядом с системой. Внутрь
- * системы человек не ходит, а за роликами ходит постоянно. Вторая копия в папке
- * проекта только занимала бы место: проверки и правки смотрят туда же.
+ * Готовый ролик живёт в папке своего проекта — рядом с исходниками и сценами
+ * этого же ролика, искать не по разным папкам.
  */
-step('Кладу готовый ролик в общую папку');
+step('Кладу готовый ролик в папку проекта');
 try {
   ensureDir(path.dirname(outputs.ready));
   try {
     renameSync(temporary, outputs.ready);
   } catch {
-    // Общая папка на другом диске — переименование туда не работает.
+    // Папка на другом диске — переименование туда не работает.
     copyFileSync(temporary, outputs.ready);
     rmSync(temporary, { force: true });
   }
   done(outputs.ready);
 } catch (error) {
   stop(
-    `Не получилось положить ролик в общую папку: ${error.message}\n` +
+    `Не получилось положить ролик в папку проекта: ${error.message}\n` +
       `Ролик собран и лежит здесь: ${temporary}`,
   );
 }

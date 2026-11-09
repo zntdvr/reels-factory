@@ -30,8 +30,8 @@ const meta = readJSON(path.join(dir, 'meta.json'));
 const blocksFile = path.join(dir, 'work', 'blocks.json');
 const blocks = existsSync(blocksFile) ? readJSON(blocksFile).blocks : [];
 
-// Готовый ролик лежит в одном месте — в общей папке OUT REELS.
-const output = findReel(meta, config);
+// Готовый ролик лежит в папке своего проекта.
+const output = findReel(meta, config, dir);
 
 const problems = [];
 const warnings = [];

@@ -181,8 +181,10 @@ def main():
     if not opts.wav or not opts.out:
         sys.exit('Нужны --wav и --out.')
 
-    vad = onnx_asr.load_vad(VAD_MODEL, models / 'silero-vad')
-    asr = onnx_asr.load_model(ASR_MODEL, models / ASR_MODEL, quantization=quantization).with_timestamps()
+    # Только процессор: CoreML на части маков падает при расчёте модели.
+    cpu = ['CPUExecutionProvider']
+    vad = onnx_asr.load_vad(VAD_MODEL, models / 'silero-vad', providers=cpu)
+    asr = onnx_asr.load_model(ASR_MODEL, models / ASR_MODEL, quantization=quantization, providers=cpu).with_timestamps()
 
     audio = read_wav(opts.wav)
     segments = speech_segments(vad, audio, opts)
