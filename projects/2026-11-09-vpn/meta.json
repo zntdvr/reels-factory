@@ -1,0 +1,18 @@
+{
+  "id": "2026-11-09-vpn",
+  "title": "vpn",
+  "createdAt": "2026-11-09T15:08:12.650Z",
+  "topic": null,
+  "source": {
+    "kind": "video",
+    "file": "projects/2026-11-09-vpn/source/original.MOV"
+  },
+  "durationSeconds": 48.0267,
+  "fps": 30,
+  "stage": "scenes",
+  "clean": {
+    "file": "2026-11-09-vpn/clean.mp4",
+    "durationSeconds": 47.1,
+    "kind": "video"
+  }
+}

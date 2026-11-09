@@ -1,6 +1,6 @@
 import type { Reel } from '../core/reel';
 // reelfactory:imports
-import reel_2026_09_20_backup from './2026-09-20-backup/reel';
+import reel_2026_11_09_vpn from './2026-11-09-vpn/reel';
 
 /**
  * СПИСОК РОЛИКОВ. Ведётся системой: при сборке каркаса проекта сюда добавляется
@@ -11,5 +11,5 @@ import reel_2026_09_20_backup from './2026-09-20-backup/reel';
  */
 export const reels: Reel[] = [
   // reelfactory:reels
-  reel_2026_09_20_backup,
+  reel_2026_11_09_vpn,
 ];
