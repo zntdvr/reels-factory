@@ -31,14 +31,14 @@ const blocksFile = path.join(dir, 'work', 'blocks.json');
 const blocks = existsSync(blocksFile) ? readJSON(blocksFile).blocks : [];
 
 // Готовый ролик лежит в папке своего проекта.
-const output = findReel(meta, config, dir);
+const output = typeof options.file === 'string' ? path.resolve(options.file) : findReel(meta, config, dir);
 
 const problems = [];
 const warnings = [];
 const good = [];
 
 // ── файл ────────────────────────────────────────────────
-if (!output) stop('Готового файла нет — сначала рендер.');
+if (!output || !existsSync(output)) stop('Готового файла нет — сначала рендер.');
 const size = statSync(output).size;
 if (size < 100_000) problems.push(`Файл подозрительно мал: ${(size / 1024).toFixed(0)} КБ. Похоже, рендер оборвался.`);
 else good.push(`Файл на месте: ${(size / 1024 / 1024).toFixed(1)} МБ`);

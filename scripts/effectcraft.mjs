@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import path from 'node:path';
+import { requireApproval } from './lib/edit-session.mjs';
 import { existsSync, renameSync } from 'node:fs';
 import { args, p, readConfig, readJSON, ensureDir, stop, done, writeJSON } from './lib/util.mjs';
 import { verifyCraftVideo } from './lib/craft-media.mjs';
@@ -9,6 +10,7 @@ const options = args();
 if (![options.project, options.block].every((v) => typeof v === 'string' && /^[a-z0-9-]+$/i.test(v))) stop('Укажите --project ID --block B01');
 const config = readConfig();
 const dir = p('projects', options.project);
+requireApproval(dir);
 const { blocks } = readJSON(path.join(dir, 'work/blocks.json'));
 const block = blocks.find((b) => b.id === options.block);
 if (!block || block.camera || block.visualizer !== 'effectcraft') stop('Нужен графический блок с visualizer: effectcraft в work/blocks.json.');

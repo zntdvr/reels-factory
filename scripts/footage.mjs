@@ -34,6 +34,7 @@
  */
 import { copyFileSync, existsSync, readdirSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { requireApproval } from './lib/edit-session.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import {
   args, done, ensureDir, has, isWindows, mediaDuration, note, p, problem, readConfig, readEnv, readJSON,
@@ -249,6 +250,7 @@ const blockId = String(options.block);
 if (!/^[a-z0-9-]+$/i.test(blockId)) stop('Имя блока может содержать только латинские буквы, цифры и дефис.');
 
 const projectDir = p('projects', String(options.project));
+requireApproval(projectDir);
 const meta = readJSON(path.join(projectDir, 'meta.json'));
 const { blocks } = readJSON(path.join(projectDir, 'work', 'blocks.json'));
 const block = blocks.find((b) => b.id === blockId);

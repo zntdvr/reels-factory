@@ -36,7 +36,14 @@ npx tsc --noEmit
 `npm test` требует обеих CLI и ffmpeg: интеграционные проверки используют настоящие
 редакторы, не подмены. Для только быстрых проверок: `node --test tests/craft.test.mjs`.
 
-## Обычная работа
+## Основной процесс
+
+План → утверждение → черновик → правки в открытом FilmCraft → экспорт по команде.
+Инструкция: [`EDITING.md`](EDITING.md). Команды: `npm run edit -- plan|approve|prepare|open|inspect|command|update --project ID`.
+Для проекта с edit-сессией `npm run render -- --project ID` экспортирует текущий
+FilmCraft-монтаж. Просчёт сцен при prepare обязателен, финальный MP4 не создаётся.
+
+## Старые проекты без edit-сессии
 
 ```sh
 npm run render -- --project ID
@@ -47,7 +54,7 @@ npm run render -- --project ID
 
 - `ID.fcproj`: редактируемый проект;
 - `media/`: отдельные клипы сцен, объектов и WAV-дорожки;
-- `reference.mp4`: обычный рендер Remotion для визуального сравнения;
+- `reference.mp4`: эталон Remotion только при явном флаге `--reference`;
 - `objects.json`: соответствие имён объектов и ID FilmCraft;
 - `manifest.json`, `inspection.json`: описание и фактический таймлайн;
 - `README.md`: ограничения именно этого экспорта;
@@ -58,6 +65,7 @@ npm run render -- --project ID
 ```sh
 npm run filmcraft -- --project ID
 npm run filmcraft -- --project ID --out projects/ID/out
+npm run filmcraft -- --project ID --reference # дополнительно полный эталон
 ```
 
 Папки не перезаписываются: ручные правки FilmCraft сохраняются при повторном

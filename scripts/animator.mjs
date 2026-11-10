@@ -2,6 +2,7 @@
 /** РЕНДЕР ОДНОЙ СЦЕНЫ ЧЕРЕЗ WHITEBOARD-ANIMATOR. */
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { requireApproval } from './lib/edit-session.mjs';
 import { spawnSync } from 'node:child_process';
 import {
   args, done, p, readConfig, readJSON, say, step, stop, writeJSON,
@@ -16,6 +17,7 @@ if (!/^[a-z0-9-]+$/i.test(String(options.block))) stop('Имя блока для
 const config = readConfig();
 if (config.animator?.enabled === false) stop('Animator отключён в config/project.json.');
 const projectDir = p('projects', String(options.project));
+requireApproval(projectDir);
 const meta = readJSON(path.join(projectDir, 'meta.json'));
 const blockData = readJSON(path.join(projectDir, 'work', 'blocks.json'));
 const block = blockData.blocks.find((item) => item.id === options.block);

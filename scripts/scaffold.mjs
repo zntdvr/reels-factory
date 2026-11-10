@@ -14,6 +14,7 @@
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
+import { requireApproval } from './lib/edit-session.mjs';
 import {
   args, done, ensureDir, note, p, readJSON, say, step, stop,
 } from './lib/util.mjs';
@@ -22,6 +23,7 @@ const options = args();
 if (!options.project) stop('Не указан проект: --project <идентификатор>');
 
 const dir = p('projects', String(options.project));
+requireApproval(dir);
 const meta = readJSON(path.join(dir, 'meta.json'));
 const blocksFile = path.join(dir, 'work', 'blocks.json');
 if (!existsSync(blocksFile)) stop(`Сначала разметка блоков: node scripts/blocks.mjs --project ${meta.id}`);
@@ -269,6 +271,8 @@ const items = blocks
       id: '${b.id}',
       text: '${escape(b.text)}',
       frames: ${b.frames},
+      transition: ${JSON.stringify(b.transition ?? 'auto')},
+      sfx: ${JSON.stringify(b.sfx ?? [])},
       ${b.camera ? 'camera: true,' : b.visualizer === 'animator'
         ? `animator: '${meta.id}/animator/${b.id}.webm',`
         : b.visualizer === 'effectcraft' ? `effectcraft: '${meta.id}/effectcraft/${b.id}.webm',`
@@ -339,4 +343,4 @@ if (registry.includes(`'./${meta.id}/reel'`)) {
 }
 
 say(`\n  Посмотреть:  npm run studio`);
-say(`  Собрать:     node scripts/render.mjs --project ${meta.id}\n`);
+say(`  Подготовить: npm run edit -- prepare --project ${meta.id}\n`);

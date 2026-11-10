@@ -10,8 +10,11 @@ export function craftBinary(app, config = {}) {
 }
 
 /** One local headless engine session. No shell, no UI state, no automatic mutation retry. */
-export async function startCraft(app, config = {}) {
-  const child = spawn(craftBinary(app, config), ['mcp'], { stdio: ['pipe', 'pipe', 'pipe'] });
+export async function startCraft(app, config = {}, { bridge, token, project } = {}) {
+  const child = spawn(craftBinary(app, config), ['mcp', ...(bridge ? ['--bridge', bridge] : project ? ['--project', project] : [])], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: { ...process.env, ...(token ? { FILMCRAFT_CONTROL_TOKEN: token } : {}) },
+  });
   const pending = new Map();
   let serial = 0, stderr = '', dead = null;
   const fail = (error) => {

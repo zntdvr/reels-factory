@@ -314,4 +314,8 @@ Claude Code». Иначе полоса рябит, и глаз не успева
 `effectcraft.cli` и `filmcraft.cli` — путь к соответствующему официальному CLI
 (пусто: локальный tools/craft/bin или PATH; переменные EFFECTCRAFT_CLI и FILMCRAFT_CLI
 имеют приоритет). `filmcraft.exportOnRender: true` создаёт редактируемый пакет рядом
-с MP4. Для одного запуска отключается `--no-filmcraft`. См. docs/CRAFT.md.
+с MP4 у старых проектов без edit-сессии. Для одного такого запуска отключается
+`--no-filmcraft`. Новый процесс описан в `docs/EDITING.md`: подготовка черновика
+и живые правки перед экспортом. `filmcraft.executable` — путь к desktop-приложению
+для `edit open` (альтернатива: `FILMCRAFT_APP`; macOS — /Applications/FilmCraft.app).
+CLI и desktop должны поддерживать bridge; проверено с FilmCraft 0.18.0.

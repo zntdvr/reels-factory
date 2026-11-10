@@ -29,8 +29,10 @@
     "kb": "node scripts/kb.mjs",
     "effectcraft": "node scripts/effectcraft.mjs",
     "filmcraft": "node scripts/filmcraft.mjs",
+    "edit": "node scripts/edit.mjs",
     "craft-demo": "node scripts/craft-demo.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:editing": "node tests/editing.smoke.mjs"
   },
   "dependencies": {
     "@remotion/captions": "^4.0.286",

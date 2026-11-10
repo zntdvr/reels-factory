@@ -3,6 +3,40 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { startCraft } from './craft-client.mjs';
 import { framesToTicks, validateLayers } from '../../core/craft-contract.mjs';
 
+/** Native saves use absolute media paths; keep generated package media portable. */
+export function relativizeFilmcraft(output, { strict = false } = {}) {
+  const document = JSON.parse(readFileSync(output, 'utf8'));
+  if (!document.project?.items) throw new Error('Unsupported FilmCraft project schema');
+  for (const item of Object.values(document.project.items)) {
+    const file = item.kind?.Media?.media?.File;
+    if (!file) continue;
+    const relative = path.isAbsolute(file.path) ? path.relative(path.dirname(path.resolve(output)), file.path) : file.path;
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      if (strict) throw new Error('Package media must be beside the FilmCraft project');
+      continue; // Manually imported external media remain explicit absolute references.
+    }
+    file.path = relative.split(path.sep).join('/');
+  }
+  writeFileSync(output, JSON.stringify(document));
+}
+
+export async function replaceGeneratedMedia(client, objects, media) {
+  const sequence = await client.tool('sequence_inspect');
+  const clips = [...sequence.video, ...sequence.audio].flatMap((track) => track.items);
+  const replacements = media.map((m) => {
+    const object = objects.find((o) => o.name === m.name);
+    const ids = object?.clips ?? (object?.clip ? [object.clip] : []);
+    if (!ids.length || ids.some((id) => !clips.some((c) => c.clip === id))) throw new Error(`Объект ${m.name} удалён или изменён; автоматическая замена невозможна.`);
+    return { ...m, ids };
+  });
+  // Preflight every target before applying the first edit. Imports are versioned files.
+  for (const m of replacements) {
+    const imported = await client.command('file.import', { paths: [path.resolve(m.file)] });
+    if (imported.errors?.length || !imported.items?.length) throw new Error(`FilmCraft import failed: ${m.name}`);
+    await client.command('clip.replaceFromBin', { clips: m.ids, item: imported.items[0], keepSourceIn: true });
+  }
+}
+
 /** Build a native project through FilmCraft's own engine, not an invented JSON schema. */
 export async function assembleFilmcraft(manifest, media, output, config = {}) {
   for (const block of manifest.blocks) validateLayers(block.layers, block.frames);
@@ -10,7 +44,7 @@ export async function assembleFilmcraft(manifest, media, output, config = {}) {
   const objects = [];
   try {
     const maxLayers = Math.max(0, ...manifest.blocks.map((b) => b.layers.length));
-    await client.command('file.newSequence', { name: manifest.title, width: manifest.width,
+    const created = await client.command('file.newSequence', { name: manifest.title, width: manifest.width,
       height: manifest.height, fps: manifest.fps, video: maxLayers + 3, audio: 3 });
     for (const clip of media) {
       const imported = await client.command('file.import', { paths: [path.resolve(clip.file)] });
@@ -40,16 +74,7 @@ export async function assembleFilmcraft(manifest, media, output, config = {}) {
     if (inspection.durationFrames !== manifest.totalFrames) throw new Error('FilmCraft timeline duration differs from the reel');
     // Native v0.18 stores absolute MediaRef::File paths. Its loader supports paths
     // relative to the document (crates/project/src/item.rs; stored_paths_tests.rs).
-    const document = JSON.parse(readFileSync(output, 'utf8'));
-    if (!document.project?.items) throw new Error('Unsupported FilmCraft project schema');
-    for (const item of Object.values(document.project.items)) {
-      const file = item.kind?.Media?.media?.File;
-      if (!file) continue;
-      const relative = path.relative(path.dirname(path.resolve(output)), file.path);
-      if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error('Package media must be beside the FilmCraft project');
-      file.path = relative.split(path.sep).join('/');
-    }
-    writeFileSync(output, JSON.stringify(document));
-    return { objects, inspection };
+    relativizeFilmcraft(output, { strict: true });
+    return { objects, inspection, sequence: created.sequence };
   } finally { client.close(); }
 }

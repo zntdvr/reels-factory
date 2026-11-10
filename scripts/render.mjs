@@ -15,6 +15,8 @@ import {
 import { normalizeLoudness } from './lib/loudness.mjs';
 import { craftBinary } from './lib/craft-client.mjs';
 import { spawnSync } from 'node:child_process';
+import { readSession, requireApproval } from './lib/edit-session.mjs';
+import { exportFilmcraft } from './lib/filmcraft-export.mjs';
 
 const options = args();
 if (!options.project) stop('Не указан проект: --project <идентификатор>');
@@ -22,6 +24,12 @@ if (!options.project) stop('Не указан проект: --project <иден�
 const config = readConfig();
 const dir = p('projects', String(options.project));
 const meta = readJSON(path.join(dir, 'meta.json'));
+requireApproval(dir);
+if (readSession(dir)) {
+  try { await exportFilmcraft(dir, meta, config); }
+  catch (error) { stop(error.message); }
+  process.exit(0);
+}
 const workDir = path.join(dir, 'work');
 
 if (!existsSync(path.join(dir, 'reel.tsx'))) {

@@ -15,6 +15,7 @@
  */
 import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { readSession, saveSession } from './lib/edit-session.mjs';
 import {
   args, done, fmt, note, p, readConfig, readJSON, say, step, stop, writeJSON,
 } from './lib/util.mjs';
@@ -169,7 +170,8 @@ writeFileSync(
 );
 done('work/blocks.json и work/blocks.md');
 
-meta.stage = 'scenes';
+saveSession(dir, { ...readSession(dir), approval: null });
+meta.stage = 'plan';
 writeJSON(path.join(dir, 'meta.json'), meta);
 
 if (shotOnCamera) {
@@ -178,4 +180,4 @@ if (shotOnCamera) {
 }
 
 say('\n  Дальше — разбивку проверить по смыслу, затем сцены под графические блоки.');
-say(`  Каркас проекта:  node scripts/scaffold.mjs --project ${meta.id}\n`);
+say(`  Заполните metaphor, transition и sfx; покажите план: npm run edit -- plan --project ${meta.id}\n`);

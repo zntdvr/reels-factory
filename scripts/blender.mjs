@@ -2,6 +2,7 @@
 /** СБОРКА ПРОЗРАЧНОГО 3D-КЛИПА ДЛЯ ОДНОГО БЛОКА ЧЕРЕЗ BLENDER. */
 import { existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { requireApproval } from './lib/edit-session.mjs';
 import { spawnSync } from 'node:child_process';
 import {
   args, done, p, readConfig, readJSON, say, step, stop,
@@ -16,6 +17,7 @@ if (!/^[a-z0-9-]+$/i.test(String(options.block))) stop('Имя блока мож
 const config = readConfig();
 if (config.blender?.enabled === false) stop('Blender отключён в config/project.json.');
 const projectDir = p('projects', String(options.project));
+requireApproval(projectDir);
 const meta = readJSON(path.join(projectDir, 'meta.json'));
 const blockData = readJSON(path.join(projectDir, 'work', 'blocks.json'));
 const block = blockData.blocks.find((item) => item.id === options.block);
