@@ -1,5 +1,6 @@
 import type { Reel } from '../core/reel';
 // reelfactory:imports
+import reel_2026_11_15_instagram from './2026-11-15-instagram/reel';
 import reel_2026_11_09_vpn from './2026-11-09-vpn/reel';
 
 /**
@@ -11,5 +12,6 @@ import reel_2026_11_09_vpn from './2026-11-09-vpn/reel';
  */
 export const reels: Reel[] = [
   // reelfactory:reels
+  reel_2026_11_15_instagram,
   reel_2026_11_09_vpn,
 ];

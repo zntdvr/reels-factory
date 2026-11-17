@@ -4,10 +4,13 @@ public/*
 !public/.gitkeep
 !public/music/
 !public/sfx/
+!public/fonts/
 models/*
 !models/.gitkeep
 projects/*/out/
 projects/*/work/
+projects/*/source/
+projects/*/carousel-export-*/
 .DS_Store
 *.log
 tools/blender/

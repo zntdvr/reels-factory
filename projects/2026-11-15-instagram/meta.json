@@ -1,0 +1,34 @@
+{
+  "id": "2026-11-15-instagram",
+  "title": "Instagram",
+  "createdAt": "2026-11-15T21:11:51.342Z",
+  "topic": "История Instagram: от Burbn и квадратных фото до Stories и Reels",
+  "content": {
+    "type": "history",
+    "format": "narrated-story"
+  },
+  "source": {
+    "kind": "topic",
+    "file": null
+  },
+  "assets": [],
+  "durationSeconds": null,
+  "fps": 30,
+  "stage": "script",
+  "draft": {
+    "narration": false,
+    "timingSource": "editorial-estimate-no-narration",
+    "plannedDurationSeconds": 63
+  },
+  "clean": {
+    "kind": "audio",
+    "file": "2026-11-15-instagram/draft-silence.wav",
+    "duration": 63,
+    "placeholder": true,
+    "description": "Техническая тишина для версии без озвучки; не результат чистки голоса."
+  },
+  "shots": [
+    "2026-11-15-instagram/shots/acquisition.png",
+    "2026-11-15-instagram/shots/acquisition-excerpt.png"
+  ]
+}

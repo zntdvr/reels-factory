@@ -17,6 +17,7 @@
  */
 import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { requireVideo } from './lib/content.mjs';
 import {
   args, ffmpegProbeStderr, findReel, fmt, p, readConfig, readJSON, say, stop, videoStreamDuration,
 } from './lib/util.mjs';
@@ -27,6 +28,7 @@ if (!options.project) stop('Не указан проект: --project <иден�
 const config = readConfig();
 const dir = p('projects', String(options.project));
 const meta = readJSON(path.join(dir, 'meta.json'));
+try { requireVideo(meta); } catch (error) { stop(error.message); }
 const blocksFile = path.join(dir, 'work', 'blocks.json');
 const blocks = existsSync(blocksFile) ? readJSON(blocksFile).blocks : [];
 

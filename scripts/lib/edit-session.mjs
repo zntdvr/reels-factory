@@ -2,6 +2,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { p, readJSON, writeJSON } from './util.mjs';
+import { requireVideo, validateContentBlocks } from './content.mjs';
 
 export const sessionFile = (dir) => path.join(dir, 'work/edit-session.json');
 export const readSession = (dir) => existsSync(sessionFile(dir)) ? readJSON(sessionFile(dir)) : null;
@@ -26,15 +27,20 @@ function validatePlan(data) {
 }
 
 function revisionNow(dir) {
-  return hash(JSON.stringify(readJSON(blocksFile(dir))) + '\n' + readFileSync(planFile(dir), 'utf8'));
+  const meta = readJSON(path.join(dir, 'meta.json'));
+  const content = meta.content ? JSON.stringify(requireVideo(meta)) : '';
+  return hash(JSON.stringify(readJSON(blocksFile(dir))) + '\n' + readFileSync(planFile(dir), 'utf8') + content);
 }
 
 export function writePlan(dir) {
+  const meta = readJSON(path.join(dir, 'meta.json'));
+  requireVideo(meta);
   const data = readJSON(blocksFile(dir));
   validatePlan(data);
-  const meta = readJSON(path.join(dir, 'meta.json'));
+  const content = validateContentBlocks(meta, data.blocks);
   let frame = 0;
-  const text = `# Монтажный план: ${meta.title}\n\n` + data.blocks.map((b) => {
+  const text = `# Монтажный план: ${meta.title}\n\n` +
+    (meta.content ? `Вид: ${content.label}. Формат: ${content.recipe.label}.\n\n` : '') + data.blocks.map((b) => {
     const start = frame / data.fps; frame += b.frames;
     return `## ${b.id} · ${start.toFixed(2)}–${(frame / data.fps).toFixed(2)} с\n\n` +
       `Речь: ${b.text}\n\nКадр: ${b.metaphor}\n\nИнструмент: ${b.camera ? 'камера' : b.visualizer}\n\n` +
@@ -51,11 +57,21 @@ export function approvePlan(dir, revision) {
   const current = revisionNow(dir);
   if (revision !== current) throw new Error('Версия плана изменилась; покажите пользователю текущий план.');
   validatePlan(readJSON(blocksFile(dir)));
+  validateContentBlocks(readJSON(path.join(dir, 'meta.json')), readJSON(blocksFile(dir)).blocks);
   saveSession(dir, { ...readSession(dir), revision: current, approval: current });
 }
 
 export function requireApproval(dir) {
+  const metaFile = path.join(dir, 'meta.json');
+  let typedProject = false;
+  if (existsSync(metaFile)) {
+    const meta = readJSON(metaFile);
+    typedProject = Boolean(meta.content);
+    requireVideo(meta);
+    if (existsSync(blocksFile(dir))) validateContentBlocks(meta, readJSON(blocksFile(dir)).blocks);
+  }
   const state = readSession(dir);
+  if (!state && typedProject) throw new Error('Сначала покажите и утвердите монтажный план: npm run edit -- plan --project ID');
   if (!state) return; // Existing standalone projects retain their current commands.
   if (!state.approval) throw new Error('Сначала покажите монтажный план и дождитесь утверждения пользователя: npm run edit -- plan --project ID');
   if (state.approval !== revisionNow(dir)) throw new Error('План или блоки изменились после утверждения; покажите и утвердите новую версию.');

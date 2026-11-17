@@ -1,6 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, random } from 'remotion';
-import { VIDEO } from '../core/format';
+import { AbsoluteFill, random, useVideoConfig } from 'remotion';
 import { tokens } from './tokens';
 
 /**
@@ -14,6 +13,7 @@ import { tokens } from './tokens';
  * лист получается один и тот же, и кадры не «шипят» между собой.
  */
 export const Background: React.FC = () => {
+  const VIDEO = useVideoConfig();
   const grain = tokens.extra?.grain as {
     count: number;
     opacity: number;

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "types": {
+    "history": {
+      "label": "Исторические IT-видео",
+      "pipeline": "video",
+      "defaultFormat": "narrated-story",
+      "formats": {
+        "narrated-story": {
+          "label": "История без ведущего",
+          "camera": "forbidden",
+          "voice": "elevenlabs",
+          "visualizers": ["footage", "remotion"],
+          "structure": ["Зацепка", "Контекст", "Ключевые события", "Последствия", "Вопрос зрителю"]
+        }
+      }
+    },
+    "reel": {
+      "label": "Рилсы",
+      "pipeline": "video",
+      "defaultFormat": "presenter-cutaways",
+      "formats": {
+        "presenter-cutaways": {
+          "label": "Человек и самостоятельные сцены",
+          "camera": "mixed-when-video",
+          "voice": "source-or-elevenlabs",
+          "visualizers": ["remotion", "animator", "effectcraft", "blender", "footage"],
+          "structure": ["Зацепка", "Проблема", "Доказательство", "Решение", "Призыв"]
+        }
+      }
+    },
+    "carousel": {
+      "label": "Instagram-карусели",
+      "pipeline": "slides",
+      "defaultFormat": "educational",
+      "formats": {
+        "educational": {
+          "label": "Одна мысль на слайд",
+          "camera": "forbidden",
+          "voice": "none",
+          "visualizers": [],
+          "canvas": { "width": 1080, "height": 1350 },
+          "maxSlides": 9,
+          "structure": ["Обложка с хуком", "Основные мысли", "Призыв с пользой для читателя"]
+        }
+      }
+    }
+  }
+}

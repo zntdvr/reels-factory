@@ -16,11 +16,20 @@
  */
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
+import { requireVideo } from './lib/content.mjs';
 import {
   args, done, ensureDir, fmt, note, p, readConfig, readEnv, readJSON, say, step, stop, writeJSON,
 } from './lib/util.mjs';
 
 const options = args();
+// Проверяем проект до платного запроса к синтезатору.
+let dir, meta;
+if (!options.voices && !options.demo) {
+  if (!options.project) stop('Не указан проект: --project <идентификатор>');
+  dir = p('projects', String(options.project));
+  meta = readJSON(path.join(dir, 'meta.json'));
+  try { requireVideo(meta); } catch (error) { stop(error.message); }
+}
 const env = readEnv();
 const config = readConfig();
 
@@ -118,8 +127,6 @@ if (options.demo) {
 
 if (!options.project) stop('Не указан проект: --project <идентификатор>');
 
-const dir = p('projects', String(options.project));
-const meta = readJSON(path.join(dir, 'meta.json'));
 const workDir = path.join(dir, 'work');
 ensureDir(workDir);
 

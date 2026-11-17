@@ -12,6 +12,7 @@
 import { existsSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { requireVideo } from './lib/content.mjs';
 import {
   ASR_SCRIPT, args, asrPython, done, ensureDir, p, readConfig, readJSON, say, step, stop, run, writeJSON,
 } from './lib/util.mjs';
@@ -22,6 +23,7 @@ if (!options.project) stop('Не указан проект: --project <иден�
 const config = readConfig();
 const dir = p('projects', String(options.project));
 const meta = readJSON(path.join(dir, 'meta.json'));
+try { requireVideo(meta); } catch (error) { stop(error.message); }
 const workDir = path.join(dir, 'work');
 ensureDir(workDir);
 

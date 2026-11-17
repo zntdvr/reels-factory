@@ -21,6 +21,7 @@ if (!config.shots.web) {
 }
 
 function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
   if (config.shots.chromePath) return config.shots.chromePath;
   const candidates = isMac
     ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
@@ -34,7 +35,7 @@ function findChrome() {
 }
 
 const chrome = findChrome();
-if (!chrome) stop('Не нашёл Google Chrome. Установите его или укажите путь в настройке.');
+if (!chrome) stop('Не нашёл Google Chrome. Установите его или задайте CHROME_PATH/путь в настройке.');
 
 const puppeteer = (await import('puppeteer-core')).default;
 const browser = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--disable-gpu'] });

@@ -15,6 +15,7 @@
  */
 import { copyFileSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { requireVideo } from './lib/content.mjs';
 import {
   args, done, ensureDir, ffmpegProbeStderr, fmt, mediaDuration, note, p, readConfig,
   readJSON, run, say, step, stop, writeJSON,
@@ -42,6 +43,7 @@ const rules = {
 };
 const dir = p('projects', String(options.project));
 const meta = readJSON(path.join(dir, 'meta.json'));
+try { requireVideo(meta); } catch (error) { stop(error.message); }
 const workDir = path.join(dir, 'work');
 // Материалы, которые видит рендер, живут в папке проекта; в public они
 // переезжают только на время рендера.

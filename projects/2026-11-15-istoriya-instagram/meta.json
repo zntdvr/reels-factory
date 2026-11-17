@@ -1,0 +1,26 @@
+{
+  "id": "2026-11-15-istoriya-instagram",
+  "title": "История Instagram",
+  "createdAt": "2026-11-15T21:07:15.307Z",
+  "topic": "Как Instagram вырос из Burbn: от фотографий к Stories и Reels",
+  "content": {
+    "type": "carousel",
+    "format": "educational"
+  },
+  "source": {
+    "kind": "topic",
+    "file": null
+  },
+  "assets": [
+    "source/assets/arrow-right.svg",
+    "source/assets/bookmark.svg",
+    "source/assets/camera.svg",
+    "source/assets/film.svg",
+    "source/assets/instagram.svg",
+    "source/assets/map-pin.svg",
+    "source/assets/play.svg",
+    "source/assets/users.svg"
+  ],
+  "durationSeconds": null,
+  "stage": "slides"
+}

@@ -13,7 +13,7 @@ test('EffectCraft command produces exact alpha frames and rerender preserves edi
   try {
     mkdirSync(path.join(root,'scripts/lib'),{recursive:true});
     cpSync(p('scripts/effectcraft.mjs'),path.join(root,'scripts/effectcraft.mjs'));
-    for(const file of ['util.mjs','craft-client.mjs','craft-media.mjs','edit-session.mjs']) cpSync(p('scripts/lib',file),path.join(root,'scripts/lib',file));
+    for(const file of ['util.mjs','craft-client.mjs','craft-media.mjs','content.mjs','edit-session.mjs']) cpSync(p('scripts/lib',file),path.join(root,'scripts/lib',file));
     const json=(file,data)=>{mkdirSync(path.dirname(path.join(root,file)),{recursive:true});writeFileSync(path.join(root,file),JSON.stringify(data));};
     const format={width:128,height:72,fps:30};
     json('config/project.json',{format,effectcraft:{cli:craftBinary('effectcraft')}});

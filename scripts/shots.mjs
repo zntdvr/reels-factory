@@ -119,6 +119,7 @@ if (jobs.length > config.shots.maxPerReel && !options.only) {
 
 // Берём Chrome, который уже стоит на машине: свой браузер тянуть незачем.
 function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
   if (config.shots.chromePath) return config.shots.chromePath;
   const candidates = isMac
     ? [
@@ -139,7 +140,7 @@ const chrome = findChrome();
 if (!chrome) {
   stop(
     'Не нашёл Google Chrome — он нужен для съёмки сайтов.\n' +
-      'Установите его с google.com/chrome либо укажите путь в настройке (shots.chromePath).',
+      'Установите его с google.com/chrome либо задайте CHROME_PATH/настройку shots.chromePath.',
   );
 }
 

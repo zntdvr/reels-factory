@@ -11,6 +11,7 @@
  */
 import { copyFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
+import { resolveContent } from './lib/content.mjs';
 import {
   args, done, ensureDir, fmt, hasVideoStream, mediaDuration, note, p, readConfig,
   say, slugify, step, stop, today, writeJSON,
@@ -22,6 +23,10 @@ const files = options._;
 if (!options.name) stop('Не указано имя ролика. Пример: node scripts/intake.mjs --name "аналитика" файл.mp3');
 
 const config = readConfig();
+let content;
+try { content = resolveContent({ type: options.type, format: options.format }); }
+catch (error) { stop(error.message); }
+for (const file of files) if (!existsSync(file)) stop(`Файл не найден: ${file}`);
 const id = `${today()}-${slugify(options.name)}`;
 const dir = p('projects', id);
 
@@ -40,6 +45,7 @@ const TEXT = /\.(txt|md|srt)$/i;
 
 let source = { kind: 'topic', file: null };
 let durationSeconds = null;
+const assets = [];
 
 step('Разбираю присланное');
 
@@ -51,7 +57,15 @@ for (const file of files) {
   if (!existsSync(file)) stop(`Файл не найден: ${file}`);
   const base = path.basename(file);
 
-  if (MEDIA.test(base)) {
+  if (/\.(png|jpe?g|webp|svg)$/i.test(base) ||
+      (MEDIA.test(base) && (content.pipeline === 'slides' ||
+        (content.recipe.camera === 'forbidden' && hasVideoStream(file))))) {
+    const target = path.join(dir, 'source', 'assets', `${assets.length + 1}-${base}`);
+    ensureDir(path.dirname(target));
+    copyFileSync(file, target);
+    assets.push(path.relative(dir, target).split(path.sep).join('/'));
+    done(`материал для иллюстраций: ${base}`);
+  } else if (MEDIA.test(base)) {
     const isVideo = hasVideoStream(file);
     const target = path.join(dir, 'source', isVideo ? `original${path.extname(base)}` : `voice${path.extname(base)}`);
     copyFileSync(file, target);
@@ -78,14 +92,26 @@ writeJSON(path.join(dir, 'meta.json'), {
   title: options.name,
   createdAt: new Date().toISOString(),
   topic: options.topic ?? null,
+  content: { type: content.type, format: content.format },
   source,
+  assets,
   durationSeconds,
-  fps: config.format.fps,
-  stage: source.kind === 'audio' || source.kind === 'video' ? 'transcribe' : 'script',
+  ...(content.pipeline === 'video' ? { fps: config.format.fps } : {}),
+  stage: content.pipeline === 'slides' ? 'slides' :
+    source.kind === 'audio' || source.kind === 'video' ? 'transcribe' : 'script',
 });
 
 step('Что дальше');
-if (source.kind === 'audio' || source.kind === 'video') {
+say(`  ${content.label}: ${content.recipe.label}`);
+say(`  Структура: ${content.recipe.structure.join(' → ')}`);
+if (content.pipeline === 'slides') {
+  writeJSON(path.join(dir, 'carousel.json'), {
+    title: options.name,
+    canvas: content.recipe.canvas,
+    slides: [],
+  });
+  say(`  Заполнить carousel.json, затем: npm run carousel -- plan --project ${id}`);
+} else if (source.kind === 'audio' || source.kind === 'video') {
   say(`  Расшифровка речи:   node scripts/transcribe.mjs --project ${id}`);
   say(`  Чистка запинок:     node scripts/cleanup.mjs --project ${id}`);
   say(`  Разметка блоков:    node scripts/blocks.mjs --project ${id}`);

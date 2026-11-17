@@ -16,6 +16,7 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { readSession, saveSession } from './lib/edit-session.mjs';
+import { requireVideo } from './lib/content.mjs';
 import {
   args, done, fmt, note, p, readConfig, readJSON, say, step, stop, writeJSON,
 } from './lib/util.mjs';
@@ -27,6 +28,7 @@ const config = readConfig();
 const fps = config.format.fps;
 const dir = p('projects', String(options.project));
 const meta = readJSON(path.join(dir, 'meta.json'));
+const content = requireVideo(meta);
 const workDir = path.join(dir, 'work');
 
 const wordsFile = path.join(workDir, 'words.clean.json');
@@ -111,7 +113,7 @@ boundaries.push(duration);
  *
  * Прислали звук — показывать нечего, все блоки графические.
  */
-const shotOnCamera = meta.clean?.kind === 'video';
+const shotOnCamera = meta.clean?.kind === 'video' && content.recipe.camera !== 'forbidden';
 
 const blocks = groups.map((group, i) => {
   const start = boundaries[i];
@@ -126,7 +128,7 @@ const blocks = groups.map((group, i) => {
     frames,
     text: group.map((w) => w.text).join(' '),
     camera: shotOnCamera, // true — в кадре говорящий человек, сцена не нужна
-    visualizer: 'remotion', // ИИ меняет на animator (whiteboard), blender (3D) или footage (живые кадры)
+    visualizer: content.recipe.visualizers.includes('remotion') ? 'remotion' : content.recipe.visualizers[0],
     scene: null,      // имя файла сцены — появится при сборке
     metaphor: null,   // чем кадр иллюстрирует смысл
   };

@@ -99,7 +99,7 @@
   },
 
   "effectcraft": { "cli": "" },
-  "filmcraft": { "cli": "", "exportOnRender": true },
+  "filmcraft": { "cli": "", "executable": "", "exportOnRender": true },
 
   "blender": {
     "enabled": true,

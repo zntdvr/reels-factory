@@ -18,11 +18,18 @@ import { createWriteStream, existsSync, readFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import path from 'node:path';
+import { requireVideo } from './lib/content.mjs';
 import {
   args, done, ensureDir, note, p, readConfig, readEnv, readJSON, say, step, stop, writeJSON,
 } from './lib/util.mjs';
 
 const options = args();
+if (options.project && !options.avatars) {
+  try {
+    const content = requireVideo(readJSON(p('projects', String(options.project), 'meta.json')));
+    if (content.recipe.camera === 'forbidden') stop('В этом формате нет ведущего или аватара.');
+  } catch (error) { stop(error.message); }
+}
 const env = readEnv();
 const config = readConfig();
 
